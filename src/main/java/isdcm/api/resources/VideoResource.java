@@ -1,7 +1,11 @@
 package isdcm.api.resources;
 
 import isdcm.api.dto.VideoDTO;
+import isdcm.api.exceptions.ExistingVideoException;
 import isdcm.api.exceptions.SystemErrorException;
+import isdcm.api.exceptions.UsuarioModelException;
+import isdcm.api.exceptions.VideoModelException;
+import isdcm.api.exceptions.VideoModelException.VideoErrorCode;
 import isdcm.api.exceptions.VideoNotFoundException;
 import isdcm.api.mappers.VideoMapper;
 import isdcm.api.models.Video;
@@ -11,6 +15,8 @@ import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.PUT;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -44,15 +50,9 @@ public class VideoResource {
         ArrayList<Video> videos;
         try {
             if (query != null && !query.isBlank()) {
-                query = query.trim();
-                videos = videoRepo.getAllByQuery(query);
+                videos = videoRepo.readByQuery(query);
                 videos = Video.SortByQuery(videos, query);
-            } else if ((titulo != null && !titulo.isBlank()) ||
-                       (autor != null && !autor.isBlank()) ||
-                       (fechaCreacion != null && !fechaCreacion.isBlank())
-            ) {
-                titulo = titulo != null ? titulo.toLowerCase().trim() : "";
-                autor = autor != null ? autor.toLowerCase().trim() : "";
+            } else if ((titulo != null && !titulo.isBlank()) || (autor != null && !autor.isBlank()) || (fechaCreacion != null && !fechaCreacion.isBlank())) {
                 LocalDateTime[] dateRange;
                 if (fechaCreacion != null) {
                     dateRange = parseFechaCreacionParam(fechaCreacion);
@@ -62,17 +62,17 @@ public class VideoResource {
                         LocalDateTime.of(9999, 12, 31, 23, 59)
                     };
                 }
-                videos = videoRepo.getAllByAdvancedSearch(titulo, autor, dateRange[0], dateRange[1]);
-                if (!(titulo.isBlank() && autor.isBlank())) {
+                videos = videoRepo.readByAdvancedSearch(titulo, autor, dateRange[0], dateRange[1]);
+                if ((titulo != null && !titulo.isBlank()) || (autor != null && !autor.isBlank())) {
                     videos = Video.SortByAdvancedSearch(videos, titulo, autor);
                 }
             } else {
-                videos = videoRepo.getAll();
+                videos = videoRepo.readAll();
             }
         } catch (DateTimeParseException e) {
             System.out.println(e.getMessage());
-            ResourceError error = ResourceError.FECHA_CREACION_MALFORMED;
-            return Response.status(error.status).entity(error.message).build();
+            String message = VideoErrorCode.VIDEO_DURACION_INVALID.toString();
+            return Response.status(Status.BAD_REQUEST).entity(message).build();
         } catch (SystemErrorException e) {
             System.out.println(e.getMessage());
             return Response.status(Status.INTERNAL_SERVER_ERROR).build();
@@ -81,25 +81,65 @@ public class VideoResource {
         return Response.status(Status.OK).entity(dtos).build();
     }
     
+    @POST
+    public Response post(VideoDTO dtoReq) {
+        Video videoRes;
+        try {
+            Video videoReq = videoMapper.toModel(dtoReq);
+            videoRes = videoRepo.create(videoReq);
+        } catch (VideoModelException | UsuarioModelException e) {
+            String msg = e.getMessage();
+            System.out.println(msg);
+            return Response.status(Status.BAD_REQUEST).entity(msg).build();
+        } catch (ExistingVideoException e) {
+            String msg = e.getMessage();
+            System.out.println(msg);
+            return Response.status(Status.CONFLICT).entity(msg).build();
+        } catch (SystemErrorException e) {
+            System.out.println(e.getMessage());
+            return Response.status(Status.INTERNAL_SERVER_ERROR).build();
+        }
+        VideoDTO dtoRes = videoMapper.toDTO(videoRes);
+        return Response.status(Status.CREATED).entity(dtoRes).build();
+    }
+    
     @GET
     @Path("{id: [0-9]+}")
     public Response getById(@PathParam("id") String idParam) {
         int id = Integer.parseInt(idParam);
-        
         Video video;
         try {
             video = videoRepo.readById(id);
         } catch (VideoNotFoundException e) {
             System.out.println(e.getMessage());
-            ResourceError error = ResourceError.VIDEO_NOT_FOUND;
-            return Response.status(error.status).entity(error.message).build();
+            return Response.status(Status.NOT_FOUND).build();
         } catch (SystemErrorException e) {
             System.out.println(e.getMessage());
             return Response.status(Status.INTERNAL_SERVER_ERROR).build();
         }
-        
         VideoDTO dto = videoMapper.toDTO(video);
         return Response.status(Status.OK).entity(dto).build();
+    }
+    
+    @PUT
+    @Path("{id: [0-9]+}")
+    public Response putById(@PathParam("id") String idParam, VideoDTO dto) {
+        int id = Integer.parseInt(idParam);
+        dto.setId(id);
+        try {
+            Video video = videoMapper.toModel(dto);
+            videoRepo.update(video);
+        } catch (VideoModelException | UsuarioModelException e) {
+            System.out.println(e.getMessage());
+            return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
+        } catch (VideoNotFoundException e) {
+            System.out.println(e.getMessage());
+            return Response.status(Status.NOT_FOUND).build();
+        } catch (SystemErrorException e) {
+            System.out.println(e.getMessage());
+            return Response.status(Status.INTERNAL_SERVER_ERROR).build();
+        }
+        return Response.status(Status.OK).build();
     }
     
     private LocalDateTime[] parseFechaCreacionParam(String fechaCreacionParam) throws DateTimeParseException {

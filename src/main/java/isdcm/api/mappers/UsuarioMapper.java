@@ -1,6 +1,7 @@
 package isdcm.api.mappers;
 
 import isdcm.api.dto.UsuarioDTO;
+import isdcm.api.exceptions.UsuarioModelException;
 import isdcm.api.models.Usuario;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -28,7 +29,7 @@ public class UsuarioMapper {
         return dto;
     }
     
-    public Usuario toModel(UsuarioDTO dto) {
+    public Usuario toModel(UsuarioDTO dto) throws UsuarioModelException {
         Integer id = dto.getId();
         String nombre = dto.getNombre();
         String apellido = dto.getApellido();
@@ -38,7 +39,7 @@ public class UsuarioMapper {
         return new Usuario(id, nombre, apellido, email, username, password);
     }
     
-    public Usuario toModel(ResultSet rs) throws SQLException {
+    public Usuario toModel(ResultSet rs) throws SQLException, UsuarioModelException {
         int usuarioId = rs.getInt("usuario_id");
         String nombre = rs.getString("nombre");
         String apellido = rs.getString("apellido");

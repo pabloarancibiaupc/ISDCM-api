@@ -1,6 +1,9 @@
 package isdcm.api.repositories;
 
+import isdcm.api.exceptions.ExistingVideoException;
 import isdcm.api.exceptions.SystemErrorException;
+import isdcm.api.exceptions.UsuarioModelException;
+import isdcm.api.exceptions.VideoModelException;
 import isdcm.api.exceptions.VideoNotFoundException;
 import isdcm.api.mappers.VideoMapper;
 import isdcm.api.models.Video;
@@ -9,6 +12,7 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Time;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -31,26 +35,37 @@ public class VideoRepository {
         videoMapper = VideoMapper.GetInstance();
     }
     
-    public Video readById(int id) throws VideoNotFoundException, SystemErrorException {
+    public Video create(Video video) throws ExistingVideoException, SystemErrorException {
+        String autor = video.getAutor().getUsername();
+        Timestamp fechaCreacion = Timestamp.valueOf(video.getFechaCreacion());
+        Time duracion = Time.valueOf(video.getDuracion());
         try (Connection c = DriverManager.getConnection(url)) {
-            String q = "SELECT v.id AS video_id, v.*, u.id AS usuario_id, u.* " +
-                       "FROM videos v INNER JOIN usuarios u ON v.autor = u.username " +
-                       "WHERE v.id = ?";
-            PreparedStatement ps = c.prepareStatement(q);
-            ps.setInt(1, id);
-            ResultSet rs = ps.executeQuery();
+            String q = "INSERT INTO videos(titulo, autor, fecha_creacion, duracion, descripcion, formato)" +
+                       "VALUES (?, ?, ?, ?, ?, ?)";
+            PreparedStatement ps = c.prepareStatement(q, PreparedStatement.RETURN_GENERATED_KEYS);
+            ps.setString(1, video.getTitulo());
+            ps.setString(2, autor);
+            ps.setTimestamp(3, fechaCreacion);
+            ps.setTime(4, duracion);
+            ps.setString(5, video.getDescripcion());
+            ps.setString(6, video.getFormato());
+            ps.executeUpdate();
+            ResultSet rs = ps.getGeneratedKeys();
             if (rs.next()) {
-                return videoMapper.toModel(rs);
-            } else {
-                throw new VideoNotFoundException();
+                int id = rs.getInt(1);
+                video.setId(id);
             }
         } catch (SQLException e) {
             System.out.println(e);
+            if (e.getErrorCode() == 30000) {
+                throw new ExistingVideoException(e);
+            }
             throw new SystemErrorException(e);
         }
+        return video;
     }
     
-    public ArrayList<Video> getAll() throws SystemErrorException {
+    public ArrayList<Video> readAll() throws SystemErrorException {
         try (Connection c = DriverManager.getConnection(url)) {
             String q = "SELECT v.id AS video_id, v.*, u.id AS usuario_id, u.* " +
                        "FROM videos v INNER JOIN usuarios u ON v.autor = u.username " +
@@ -58,13 +73,14 @@ public class VideoRepository {
             PreparedStatement ps = c.prepareStatement(q);
             ResultSet rs = ps.executeQuery();
             return videoMapper.toModels(rs);
-        } catch (SQLException e) {
-            System.out.println(e);
+        } catch (SQLException | VideoModelException | UsuarioModelException e) {
+            System.out.println(e.getMessage());
             throw new SystemErrorException(e);
         }
     }
     
-    public ArrayList<Video> getAllByQuery(String query) throws SystemErrorException {
+    public ArrayList<Video> readByQuery(String query) throws SystemErrorException {
+        query = query.trim().toLowerCase();
         try (Connection c = DriverManager.getConnection(url)) {
             String q = "SELECT v.id AS video_id, v.*, u.id AS usuario_id, u.* " +
                        "FROM videos v INNER JOIN usuarios u ON v.autor = u.username " +
@@ -77,13 +93,15 @@ public class VideoRepository {
             ps.setString(2, param);
             ResultSet rs = ps.executeQuery();
             return videoMapper.toModels(rs);
-        } catch (SQLException e) {
-            System.out.println(e);
+        } catch (SQLException | VideoModelException | UsuarioModelException e) {
+            System.out.println(e.getMessage());
             throw new SystemErrorException(e);
         }
     }
     
-    public ArrayList<Video> getAllByAdvancedSearch(String titulo, String autor, LocalDateTime startDate, LocalDateTime endDate) throws SystemErrorException {
+    public ArrayList<Video> readByAdvancedSearch(String titulo, String autor, LocalDateTime startDate, LocalDateTime endDate) throws SystemErrorException {
+        titulo = titulo != null ? titulo.toLowerCase().trim() : "";
+        autor = autor != null ? autor.toLowerCase().trim() : "";
         Timestamp startTimestamp = Timestamp.valueOf(startDate);
         Timestamp endTimestamp = Timestamp.valueOf(endDate);
         try (Connection c = DriverManager.getConnection(url)) {
@@ -100,8 +118,56 @@ public class VideoRepository {
             ps.setTimestamp(4, endTimestamp);
             ResultSet rs = ps.executeQuery();
             return videoMapper.toModels(rs);
+        } catch (SQLException | VideoModelException | UsuarioModelException e) {
+            System.out.println(e.getMessage());
+            throw new SystemErrorException(e);
+        }
+    }
+    
+    public Video readById(int id) throws VideoNotFoundException, SystemErrorException {
+        try (Connection c = DriverManager.getConnection(url)) {
+            String q = "SELECT v.id AS video_id, v.*, u.id AS usuario_id, u.* " +
+                       "FROM videos v INNER JOIN usuarios u ON v.autor = u.username " +
+                       "WHERE v.id = ?";
+            PreparedStatement ps = c.prepareStatement(q);
+            ps.setInt(1, id);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return videoMapper.toModel(rs);
+            } else {
+                throw new VideoNotFoundException();
+            }
+        }  catch (SQLException | VideoModelException | UsuarioModelException e) {
+            System.out.println(e.getMessage());
+            throw new SystemErrorException(e);
+        }
+    }
+    
+    public void update(Video video) throws VideoNotFoundException, SystemErrorException {
+        String autor = video.getAutor().getUsername();
+        Timestamp fechaCreacion = Timestamp.valueOf(video.getFechaCreacion());
+        Time duracion = Time.valueOf(video.getDuracion());
+        try (Connection c = DriverManager.getConnection(url)) {
+            String q = "UPDATE videos " +
+                       "SET titulo = ?, autor = ?, fecha_creacion = ?, " +
+                       "    duracion = ?, reproducciones = ?, descripcion = ?, " +
+                       "    formato = ? " +
+                       "WHERE id = ?";
+            PreparedStatement ps = c.prepareStatement(q);
+            ps.setString(1, video.getTitulo());
+            ps.setString(2, autor);
+            ps.setTimestamp(3, fechaCreacion);
+            ps.setTime(4, duracion);
+            ps.setInt(5, video.getReproducciones());
+            ps.setString(6, video.getDescripcion());
+            ps.setString(7, video.getFormato());
+            ps.setInt(8, video.getId());
+            int rowsUpdated = ps.executeUpdate();
+            if (rowsUpdated == 0) {
+                throw new VideoNotFoundException();
+            }
         } catch (SQLException e) {
-            System.out.println(e);
+            System.out.println(e.getMessage());
             throw new SystemErrorException(e);
         }
     }

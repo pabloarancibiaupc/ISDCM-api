@@ -1,7 +1,10 @@
 package isdcm.api.repositories;
 
-import isdcm.api.exceptions.ExistingUserException;
+import isdcm.api.exceptions.ExistingUsuarioException;
 import isdcm.api.exceptions.SystemErrorException;
+import isdcm.api.exceptions.UsuarioModelException;
+import isdcm.api.exceptions.UsuarioNotFoundException;
+import isdcm.api.mappers.UsuarioMapper;
 import isdcm.api.models.Usuario;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -20,12 +23,14 @@ public class UsuarioRepository {
     }
     
     String url;
+    UsuarioMapper usuarioMapper;
     
     private UsuarioRepository() {
         url = "jdbc:derby://localhost:1527/pr2;user=pr2;password=pr2";
+        usuarioMapper = UsuarioMapper.GetInstance();
     }
     
-    public Usuario create(Usuario usuario) throws ExistingUserException, SystemErrorException {
+    public Usuario create(Usuario usuario) throws ExistingUsuarioException, SystemErrorException {
         try (Connection c = DriverManager.getConnection(url)) {
             String q = "INSERT INTO usuarios(nombre, apellido, email, username, password) " +
                        "VALUES (?, ?, ?, ?, ?)";
@@ -44,10 +49,30 @@ public class UsuarioRepository {
         } catch (SQLException e) {
             System.out.println(e);
             if (e.getErrorCode() == 30000) {
-                throw new ExistingUserException(e);
+                throw new ExistingUsuarioException(e);
             }
             throw new SystemErrorException(e);
         }
         return usuario;
+    }
+    
+    public Usuario readByUsernameAndPassword(String username, String password) throws UsuarioNotFoundException, SystemErrorException {
+        try (Connection c = DriverManager.getConnection(url)) {
+            String q = "SELECT id, nombre, apellido, email, username " +
+                       "FROM usuarios " +
+                       "WHERE username = ? AND password = ?";
+            PreparedStatement ps = c.prepareStatement(q);
+            ps.setString(1, username);
+            ps.setString(2, password);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return usuarioMapper.toModel(rs);
+            } else {
+                throw new UsuarioNotFoundException();
+            }
+        } catch (SQLException | UsuarioModelException e) {
+            System.out.println(e.getMessage());
+            throw new SystemErrorException(e);
+        }
     }
 }

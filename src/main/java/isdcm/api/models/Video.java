@@ -1,5 +1,7 @@
 package isdcm.api.models;
 
+import isdcm.api.exceptions.VideoModelException;
+import isdcm.api.exceptions.VideoModelException.VideoErrorCode;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
@@ -7,23 +9,46 @@ import java.util.Collections;
 import org.apache.commons.text.similarity.JaroWinklerSimilarity;
 
 public class Video {
-    Integer id;
-    String titulo;
-    Usuario autor;
-    LocalDateTime fechaCreacion;
-    LocalTime duracion;
-    int reproducciones;
-    String descripcion;
-    String formato;
+    private Integer id;
+    private String titulo;
+    private Usuario autor;
+    private LocalDateTime fechaCreacion;
+    private LocalTime duracion;
+    private int reproducciones;
+    private String descripcion;
+    private String formato;
     
-    public Video(Integer id, String titulo, Usuario autor, LocalDateTime fechaCreacion, LocalTime duracion, int reproducciones, String descripcion, String formato) {
+    public Video(Integer id, String titulo, Usuario autor, LocalDateTime fechaCreacion, LocalTime duracion, int reproducciones, String descripcion, String formato)
+            throws VideoModelException
+    {
         this.id = id;
+        if (titulo == null || titulo.isBlank()) {
+            throw new VideoModelException(VideoErrorCode.VIDEO_TITULO_REQUIRED);
+        }
         this.titulo = titulo.trim();
+        if (autor == null) {
+            throw new VideoModelException(VideoErrorCode.VIDEO_AUTOR_REQUIRED);
+        }
         this.autor = autor;
+        if (fechaCreacion == null) {
+            throw new VideoModelException(VideoErrorCode.VIDEO_FECHA_CREACION_REQUIRED);
+        }
         this.fechaCreacion = fechaCreacion;
+        if (duracion == null) {
+            throw new VideoModelException(VideoErrorCode.VIDEO_DURACION_REQUIRED);
+        }
         this.duracion = duracion;
+        if (reproducciones < 0) {
+            throw new VideoModelException(VideoErrorCode.VIDEO_REPRODUCCIONES_NEGATIVE);
+        }
         this.reproducciones = reproducciones;
+        if (descripcion == null || descripcion.isBlank()) {
+            throw new VideoModelException(VideoErrorCode.VIDEO_DESCRIPCION_REQUIRED);
+        }
         this.descripcion = descripcion.trim();
+        if (formato == null || formato.isBlank()) {
+            throw new VideoModelException(VideoErrorCode.VIDEO_FORMATO_REQUIRED);
+        }
         this.formato = formato.trim();
     }
     
@@ -91,5 +116,10 @@ public class Video {
     }
     public String getFormato() {
         return formato;
+    }
+    
+    // Setters
+    public void setId(Integer id) {
+        this.id = id;
     }
 }

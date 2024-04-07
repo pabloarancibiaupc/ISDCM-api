@@ -2,6 +2,8 @@ package isdcm.api.mappers;
 
 import isdcm.api.dto.UsuarioDTO;
 import isdcm.api.dto.VideoDTO;
+import isdcm.api.exceptions.UsuarioModelException;
+import isdcm.api.exceptions.VideoModelException;
 import isdcm.api.models.Usuario;
 import isdcm.api.models.Video;
 import java.sql.ResultSet;
@@ -53,7 +55,7 @@ public class VideoMapper {
         return dto;
     }
     
-    public ArrayList<Video> toModels(ResultSet rs) throws SQLException {
+    public ArrayList<Video> toModels(ResultSet rs) throws SQLException, VideoModelException, UsuarioModelException {
         ArrayList<Video> videos = new ArrayList<>();
         while (rs.next()) {
             Video video = toModel(rs);
@@ -62,7 +64,7 @@ public class VideoMapper {
         return videos;
     }
     
-    public Video toModel(VideoDTO dto) {
+    public Video toModel(VideoDTO dto) throws VideoModelException, UsuarioModelException {
         Integer id = dto.getId();
         String titulo = dto.getTitulo();
         Usuario autor = usuarioMapper.toModel(dto.getAutor());
@@ -74,7 +76,7 @@ public class VideoMapper {
         return new Video(id, titulo, autor, fechaCreacion, duracion, reproducciones, descripcion, formato);
     }
     
-    public Video toModel(ResultSet rs) throws SQLException {
+    public Video toModel(ResultSet rs) throws SQLException, VideoModelException, UsuarioModelException {
         int videoId = rs.getInt("video_id");
         String titulo = rs.getString("titulo");
         LocalDateTime fechaCreacion = rs.getTimestamp("fecha_creacion").toLocalDateTime();

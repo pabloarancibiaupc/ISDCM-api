@@ -3,10 +3,10 @@ package isdcm.api.exceptions;
 public class VideoNotFoundException extends Exception {
     
     public VideoNotFoundException() {
-        super("Video not found");
+        super("VIDEO_NOT_FOUND");
     }
     
     public VideoNotFoundException(Throwable cause) {
-        super("Video not found", cause);
+        super("VIDEO_NOT_FOUND", cause);
     }
 }
