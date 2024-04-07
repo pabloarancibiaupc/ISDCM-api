@@ -4,7 +4,6 @@ import isdcm.api.exceptions.UsuarioModelException;
 import isdcm.api.exceptions.UsuarioModelException.UsuarioErrorCode;
 
 public class Usuario {
-    
     private static final String EMAIL_REGEX = "^[a-z0-9_+-]+(?:\\.[a-z0-9_+-]+)*@(?:[a-z0-9-]+\\.)+[a-z]{2,7}$";
     
     private Integer id;

@@ -1,11 +1,14 @@
 package isdcm.api.exceptions;
 
 public class SystemErrorException extends Exception {
+    
+    public final static String ERROR_CODE = "SYSTEM_ERROR";
+    
     public SystemErrorException() {
-        super("System error");
+        super(ERROR_CODE);
     }
     
     public SystemErrorException(Throwable cause) {
-        super("System error", cause);
+        super(ERROR_CODE, cause);
     }
 }

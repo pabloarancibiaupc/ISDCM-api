@@ -2,11 +2,13 @@ package isdcm.api.exceptions;
 
 public class UsuarioNotFoundException extends Exception {
     
+    public final static String ERROR_CODE = "USUARIO_NOT_FOUND";
+    
     public UsuarioNotFoundException() {
-        super("USUARIO_NOT_FOUND");
+        super(ERROR_CODE);
     }
     
     public UsuarioNotFoundException(Throwable cause) {
-        super("USUARIO_NOT_FOUND", cause);
+        super(ERROR_CODE, cause);
     }
 }
