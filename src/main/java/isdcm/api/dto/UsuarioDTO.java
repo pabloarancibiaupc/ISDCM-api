@@ -1,7 +1,7 @@
 package isdcm.api.dto;
 
 public class UsuarioDTO {
-    int id;
+    Integer id;
     String nombre;
     String apellido;
     String email;
@@ -9,7 +9,7 @@ public class UsuarioDTO {
     String password;
     
     // Getters
-    public int getId() {
+    public Integer getId() {
         return id;
     }
     public String getNombre() {
@@ -29,7 +29,7 @@ public class UsuarioDTO {
     }
     
     // Setters
-    public void setId(int id) {
+    public void setId(Integer id) {
         this.id = id;
     }
     public void setNombre(String nombre) {

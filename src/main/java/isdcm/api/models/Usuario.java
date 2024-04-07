@@ -9,25 +9,24 @@ public class Usuario {
     String password;
     
     public Usuario(String nombre, String apellido, String email, String username, String password) {
-        this.id = null;
-        this.nombre = nombre;
-        this.apellido = apellido;
-        this.email = email;
-        this.username = username;
+        this(null, nombre, apellido, email, username, password);
+    }
+    
+    public Usuario(Integer id, String nombre, String apellido, String email, String username) {
+        this(id, nombre, apellido, email, username, null);
+    }
+    
+    public Usuario(Integer id, String nombre, String apellido, String email, String username, String password) {
+        this.id = id;
+        this.nombre = nombre.trim();
+        this.apellido = apellido.trim();
+        this.email = email.toLowerCase().trim();
+        this.username = username.trim();
         this.password = password;
     }
     
-    public Usuario(int id, String nombre, String apellido, String email, String username) {
-        this.id = id;
-        this.nombre = nombre;
-        this.apellido = apellido;
-        this.email = email;
-        this.username = username;
-        this.password = null;
-    }
-    
     // Getters
-    public int getId() {
+    public Integer getId() {
         return id;
     }
     public String getNombre() {
@@ -47,7 +46,7 @@ public class Usuario {
     }
     
     // Setters
-    public void setId(int id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 }

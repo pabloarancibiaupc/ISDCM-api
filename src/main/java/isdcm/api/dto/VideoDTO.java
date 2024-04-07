@@ -1,7 +1,7 @@
 package isdcm.api.dto;
 
 public class VideoDTO {
-    int id;
+    Integer id;
     String titulo;
     UsuarioDTO autor;
     String fechaCreacion;
@@ -11,7 +11,7 @@ public class VideoDTO {
     String formato;
     
     // Getters
-    public int getId() {
+    public Integer getId() {
         return id;
     }
     public String getTitulo() {
@@ -37,7 +37,7 @@ public class VideoDTO {
     }
     
     // Setters
-    public void setId(int id) {
+    public void setId(Integer id) {
         this.id = id;
     }
     public void setTitulo(String titulo) {
