@@ -23,8 +23,8 @@ import jakarta.ws.rs.core.Response.Status;
 @Consumes(MediaType.APPLICATION_JSON)
 public class UsuarioResource {
     
-    UsuarioRepository usuarioRepo;
-    UsuarioMapper usuarioMapper;
+    private final UsuarioRepository usuarioRepo;
+    private final UsuarioMapper usuarioMapper;
     
     public UsuarioResource() {
         usuarioRepo = UsuarioRepository.GetInstance();
@@ -35,7 +35,7 @@ public class UsuarioResource {
     public Response post(UsuarioCreationDTO dtoReq) {
         try {
             Usuario usuarioReq = usuarioMapper.toModel(dtoReq);
-            Usuario usuarioRes = usuarioRepo.create(usuarioReq);
+            Usuario usuarioRes = usuarioRepo.insert(usuarioReq);
             UsuarioDTO dtoRes = usuarioMapper.toDTO(usuarioRes);
             return Response.status(Response.Status.CREATED).entity(dtoRes).build();
         } catch (UsuarioModelException e) {
@@ -58,7 +58,7 @@ public class UsuarioResource {
         String username = dto.getUsername();
         String password = dto.getPassword();
         try {
-            Usuario usuario = usuarioRepo.readByUsernameAndPassword(username, password);
+            Usuario usuario = usuarioRepo.selectByUsernameAndPassword(username, password);
             UsuarioDTO dtoRes = usuarioMapper.toDTO(usuario);
             return Response.status(Response.Status.OK).entity(dtoRes).build();
         } catch (UsuarioNotFoundException e) {

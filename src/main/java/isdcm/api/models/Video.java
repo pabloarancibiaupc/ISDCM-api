@@ -4,6 +4,7 @@ import isdcm.api.exceptions.VideoModelException;
 import isdcm.api.exceptions.VideoModelException.VideoErrorCode;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Collections;
 import org.apache.commons.text.similarity.JaroWinklerSimilarity;
@@ -14,11 +15,11 @@ public class Video {
     private Usuario autor;
     private LocalDateTime fechaCreacion;
     private LocalTime duracion;
-    private int reproducciones;
+    private Integer reproducciones;
     private String descripcion;
     private String formato;
     
-    public Video(String titulo, Usuario autor, LocalTime duracion, String descripcion, String formato) throws VideoModelException {
+    private Video(String titulo, Usuario autor, String descripcion, String formato) throws VideoModelException {
         this.id = null;
         if (titulo == null || titulo.isBlank()) {
             throw new VideoModelException(VideoErrorCode.VIDEO_TITULO_REQUIRED);
@@ -26,10 +27,7 @@ public class Video {
         this.titulo = titulo.trim();
         setAutor(autor);
         this.fechaCreacion = LocalDateTime.now();
-        if (duracion == null) {
-            throw new VideoModelException(VideoErrorCode.VIDEO_DURACION_REQUIRED);
-        }
-        this.duracion = duracion;
+        this.duracion = null;
         this.reproducciones = 0;
         if (descripcion == null || descripcion.isBlank()) {
             throw new VideoModelException(VideoErrorCode.VIDEO_DESCRIPCION_REQUIRED);
@@ -41,7 +39,45 @@ public class Video {
         this.formato = formato.trim();
     }
     
-    public Video(String titulo, Usuario autor, LocalDateTime fechaCreacion, LocalTime duracion, int reproducciones, String descripcion, String formato)
+    public Video(String titulo, Usuario autor, String duracion, String descripcion, String formato) throws VideoModelException {
+        this(titulo, autor, descripcion, formato);
+        if (duracion == null) {
+            throw new VideoModelException(VideoErrorCode.VIDEO_DURACION_REQUIRED);
+        }
+        try {
+            this.duracion = LocalTime.parse(duracion);
+        } catch (DateTimeParseException e) {
+            throw new VideoModelException(VideoErrorCode.VIDEO_DURACION_INVALID);
+        }
+    }
+    
+    public Video(String titulo, Usuario autor, LocalTime duracion, String descripcion, String formato) throws VideoModelException {
+        this(titulo, autor, descripcion, formato);
+        if (duracion == null) {
+            throw new VideoModelException(VideoErrorCode.VIDEO_DURACION_REQUIRED);
+        }
+        this.duracion = duracion;
+    }
+    
+    public Video(String titulo, Usuario autor, String fechaCreacion, String duracion, Integer reproducciones, String descripcion, String formato)
+            throws VideoModelException
+    {
+        this(titulo, autor, duracion, descripcion, formato);
+        if (fechaCreacion == null) {
+            throw new VideoModelException(VideoErrorCode.VIDEO_FECHA_CREACION_REQUIRED);
+        }
+        try {
+            this.fechaCreacion = LocalDateTime.parse(fechaCreacion);
+        } catch (DateTimeParseException e) {
+            throw new VideoModelException(VideoErrorCode.VIDEO_FECHA_CREACION_INVALID);
+        }        
+        if (reproducciones < 0) {
+            throw new VideoModelException(VideoErrorCode.VIDEO_REPRODUCCIONES_INVALID);
+        }
+        this.reproducciones = reproducciones;
+    }
+    
+    public Video(String titulo, Usuario autor, LocalDateTime fechaCreacion, LocalTime duracion, Integer reproducciones, String descripcion, String formato)
             throws VideoModelException
     {
         this(titulo, autor, duracion, descripcion, formato);
@@ -55,7 +91,14 @@ public class Video {
         this.reproducciones = reproducciones;
     }
     
-    public Video(Integer id, String titulo, Usuario autor, LocalDateTime fechaCreacion, LocalTime duracion, int reproducciones, String descripcion, String formato)
+    public Video(Integer id, String titulo, Usuario autor, String fechaCreacion, String duracion, Integer reproducciones, String descripcion, String formato)
+            throws VideoModelException
+    {
+        this(titulo, autor, fechaCreacion, duracion, reproducciones, descripcion, formato);
+        setId(id);
+    }
+    
+    public Video(Integer id, String titulo, Usuario autor, LocalDateTime fechaCreacion, LocalTime duracion, Integer reproducciones, String descripcion, String formato)
             throws VideoModelException
     {
         this(titulo, autor, fechaCreacion, duracion, reproducciones, descripcion, formato);
@@ -118,7 +161,7 @@ public class Video {
     public LocalTime getDuracion() {
         return duracion;
     }
-    public int getReproducciones() {
+    public Integer getReproducciones() {
         return reproducciones;
     }
     public String getDescripcion() {

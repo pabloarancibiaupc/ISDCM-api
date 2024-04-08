@@ -1,11 +1,11 @@
 package isdcm.api.dto;
 
 public class VideoCreationDTO {
-    String titulo;
-    String autor;
-    String duracion;
-    String descripcion;
-    String formato;
+    private String titulo;
+    private String autor;
+    private String duracion;
+    private String descripcion;
+    private String formato;
     
     // Getters
     public String getTitulo() {

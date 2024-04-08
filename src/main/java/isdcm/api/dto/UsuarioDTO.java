@@ -1,11 +1,11 @@
 package isdcm.api.dto;
 
 public class UsuarioDTO {
-    Integer id;
-    String nombre;
-    String apellido;
-    String email;
-    String username;
+    private Integer id;
+    private String nombre;
+    private String apellido;
+    private String email;
+    private String username;
     
     // Getters
     public Integer getId() {

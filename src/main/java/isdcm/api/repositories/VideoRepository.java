@@ -14,7 +14,11 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Time;
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 
 public class VideoRepository {
@@ -27,15 +31,15 @@ public class VideoRepository {
         return instance;
     }
     
-    String url;
-    VideoMapper videoMapper;
+    private final String url;
+    private final VideoMapper videoMapper;
     
     private VideoRepository() {
         url = "jdbc:derby://localhost:1527/pr2;user=pr2;password=pr2";
         videoMapper = VideoMapper.GetInstance();
     }
     
-    public Video create(Video video) throws ExistingVideoException, SystemErrorException {
+    public Video insert(Video video) throws ExistingVideoException, SystemErrorException {
         String autor = video.getAutor().getUsername();
         Timestamp fechaCreacion = Timestamp.valueOf(video.getFechaCreacion());
         Time duracion = Time.valueOf(video.getDuracion());
@@ -69,7 +73,7 @@ public class VideoRepository {
         return video;
     }
     
-    public ArrayList<Video> readAll() throws SystemErrorException {
+    public ArrayList<Video> selectAll() throws SystemErrorException {
         try (Connection c = DriverManager.getConnection(url)) {
             String q = "SELECT v.id AS video_id, v.*, u.id AS usuario_id, u.* " +
                        "FROM videos v INNER JOIN usuarios u ON v.autor = u.username " +
@@ -83,7 +87,7 @@ public class VideoRepository {
         }
     }
     
-    public ArrayList<Video> readByQuery(String query) throws SystemErrorException {
+    public ArrayList<Video> selectByQuery(String query) throws SystemErrorException {
         query = query.trim().toLowerCase();
         try (Connection c = DriverManager.getConnection(url)) {
             String q = "SELECT v.id AS video_id, v.*, u.id AS usuario_id, u.* " +
@@ -103,7 +107,31 @@ public class VideoRepository {
         }
     }
     
-    public ArrayList<Video> readByAdvancedSearch(String titulo, String autor, LocalDateTime startDate, LocalDateTime endDate) throws SystemErrorException {
+    public ArrayList<Video> selectByAdvancedSearch(String titulo, String autor, String fechaCreacion) throws DateTimeParseException, SystemErrorException {
+        LocalDate startDate, endDate;
+        fechaCreacion = fechaCreacion.trim();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        switch (fechaCreacion.length()) {
+            case 4:
+                fechaCreacion = "01/01/" + fechaCreacion;
+                startDate = LocalDate.parse(fechaCreacion, formatter);
+                endDate = startDate.withMonth(12).withDayOfMonth(31);
+                break;
+            case 7:
+                fechaCreacion = "01/" + fechaCreacion;
+                startDate = LocalDate.parse(fechaCreacion, formatter);
+                endDate = startDate.plusMonths(1).minusDays(1);
+                break;
+            default:
+                startDate = endDate = LocalDate.parse(fechaCreacion, formatter);
+                break;
+        }
+        LocalDateTime startDateTime = startDate.atTime(LocalTime.MIN);
+        LocalDateTime endDateTime = endDate.atTime(LocalTime.MAX);
+        return selectByAdvancedSearch(titulo, autor, startDateTime, endDateTime);
+    }
+    
+    public ArrayList<Video> selectByAdvancedSearch(String titulo, String autor, LocalDateTime startDate, LocalDateTime endDate) throws SystemErrorException {
         titulo = titulo != null ? titulo.toLowerCase().trim() : "";
         autor = autor != null ? autor.toLowerCase().trim() : "";
         Timestamp startTimestamp = Timestamp.valueOf(startDate);
@@ -128,7 +156,7 @@ public class VideoRepository {
         }
     }
     
-    public Video readById(int id) throws VideoNotFoundException, SystemErrorException {
+    public Video selectById(int id) throws VideoNotFoundException, SystemErrorException {
         try (Connection c = DriverManager.getConnection(url)) {
             String q = "SELECT v.id AS video_id, v.*, u.id AS usuario_id, u.* " +
                        "FROM videos v INNER JOIN usuarios u ON v.autor = u.username " +

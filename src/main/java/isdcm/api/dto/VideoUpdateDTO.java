@@ -1,13 +1,13 @@
 package isdcm.api.dto;
 
 public class VideoUpdateDTO {
-    String titulo;
-    String autor;
-    String fechaCreacion;
-    String duracion;
-    int reproducciones;
-    String descripcion;
-    String formato;
+    private String titulo;
+    private String autor;
+    private String fechaCreacion;
+    private String duracion;
+    private Integer reproducciones;
+    private String descripcion;
+    private String formato;
     
     // Getters
     public String getTitulo() {
@@ -45,7 +45,7 @@ public class VideoUpdateDTO {
     public void setDuracion(String duracion) {
         this.duracion = duracion;
     }
-    public void setReproducciones(int reproducciones) {
+    public void setReproducciones(Integer reproducciones) {
         this.reproducciones = reproducciones;
     }
     public void setDescripcion(String descripcion) {

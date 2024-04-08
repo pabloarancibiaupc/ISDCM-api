@@ -26,10 +26,6 @@ import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.Response.Status;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 
@@ -38,9 +34,9 @@ import java.util.ArrayList;
 @Consumes(MediaType.APPLICATION_JSON)
 public class VideoResource {
     
-    VideoRepository videoRepo;
-    UsuarioRepository usuarioRepo;
-    VideoMapper videoMapper;
+    private final VideoRepository videoRepo;
+    private final UsuarioRepository usuarioRepo;
+    private final VideoMapper videoMapper;
     
     public VideoResource() {
         videoRepo = VideoRepository.GetInstance();
@@ -57,24 +53,15 @@ public class VideoResource {
         ArrayList<Video> videos;
         try {
             if (query != null && !query.isBlank()) {
-                videos = videoRepo.readByQuery(query);
+                videos = videoRepo.selectByQuery(query);
                 videos = Video.SortByQuery(videos, query);
             } else if ((titulo != null && !titulo.isBlank()) || (autor != null && !autor.isBlank()) || (fechaCreacion != null && !fechaCreacion.isBlank())) {
-                LocalDateTime[] dateRange;
-                if (fechaCreacion != null) {
-                    dateRange = parseFechaCreacionParam(fechaCreacion);
-                } else {
-                    dateRange = new LocalDateTime[] {
-                        LocalDateTime.of(2000, 1, 1, 0,0),
-                        LocalDateTime.of(9999, 12, 31, 23, 59)
-                    };
-                }
-                videos = videoRepo.readByAdvancedSearch(titulo, autor, dateRange[0], dateRange[1]);
+                videos = videoRepo.selectByAdvancedSearch(titulo, autor, fechaCreacion);
                 if ((titulo != null && !titulo.isBlank()) || (autor != null && !autor.isBlank())) {
                     videos = Video.SortByAdvancedSearch(videos, titulo, autor);
                 }
             } else {
-                videos = videoRepo.readAll();
+                videos = videoRepo.selectAll();
             }
             ArrayList<VideoDTO> dtos = videoMapper.toDTOs(videos);
             return Response.status(Status.OK).entity(dtos).build();
@@ -92,9 +79,9 @@ public class VideoResource {
     public Response post(VideoCreationDTO dtoReq) {
         try {
             Video videoReq = videoMapper.toModel(dtoReq);
-            Video videoRes = videoRepo.create(videoReq);
+            Video videoRes = videoRepo.insert(videoReq);
             String username = videoRes.getAutor().getUsername();
-            Usuario autor = usuarioRepo.readByUsername(username);
+            Usuario autor = usuarioRepo.selectByUsername(username);
             videoRes.setAutor(autor);
             VideoDTO dtoRes = videoMapper.toDTO(videoRes);
             return Response.status(Status.CREATED).entity(dtoRes).build();
@@ -117,7 +104,7 @@ public class VideoResource {
     public Response getById(@PathParam("id") String idParam) {
         int id = Integer.parseInt(idParam);
         try {
-            Video video = videoRepo.readById(id);
+            Video video = videoRepo.selectById(id);
             VideoDTO dto = videoMapper.toDTO(video);
             return Response.status(Status.OK).entity(dto).build();
         } catch (VideoNotFoundException e) {
@@ -154,29 +141,5 @@ public class VideoResource {
             return Response.status(Status.INTERNAL_SERVER_ERROR).build();
         }
         
-    }
-    
-    private LocalDateTime[] parseFechaCreacionParam(String fechaCreacionParam) throws DateTimeParseException {
-        LocalDate startDate, endDate;
-        String fechaCreacion = fechaCreacionParam.trim();
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-        switch (fechaCreacionParam.length()) {
-            case 4:
-                fechaCreacion = "01/01/" + fechaCreacion;
-                startDate = LocalDate.parse(fechaCreacion, formatter);
-                endDate = startDate.withMonth(12).withDayOfMonth(31);
-                break;
-            case 7:
-                fechaCreacion = "01/" + fechaCreacion;
-                startDate = LocalDate.parse(fechaCreacion, formatter);
-                endDate = startDate.plusMonths(1).minusDays(1);
-                break;
-            default:
-                startDate = endDate = LocalDate.parse(fechaCreacionParam, formatter);
-                break;
-        }
-        LocalDateTime startDateTime = startDate.atTime(LocalTime.MIN);
-        LocalDateTime endDateTime = endDate.atTime(LocalTime.MAX);
-        return new LocalDateTime[] {startDateTime, endDateTime};
     }
 }

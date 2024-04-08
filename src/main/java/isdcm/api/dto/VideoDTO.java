@@ -1,14 +1,14 @@
 package isdcm.api.dto;
 
 public class VideoDTO {
-    Integer id;
-    String titulo;
-    UsuarioDTO autor;
-    String fechaCreacion;
-    String duracion;
-    int reproducciones;
-    String descripcion;
-    String formato;
+    private Integer id;
+    private String titulo;
+    private UsuarioDTO autor;
+    private String fechaCreacion;
+    private String duracion;
+    private Integer reproducciones;
+    private String descripcion;
+    private String formato;
     
     // Getters
     public Integer getId() {

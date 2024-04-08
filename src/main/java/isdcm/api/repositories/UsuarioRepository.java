@@ -22,15 +22,15 @@ public class UsuarioRepository {
         return instance;
     }
     
-    String url;
-    UsuarioMapper usuarioMapper;
+    private final String url;
+    private final UsuarioMapper usuarioMapper;
     
     private UsuarioRepository() {
         url = "jdbc:derby://localhost:1527/pr2;user=pr2;password=pr2";
         usuarioMapper = UsuarioMapper.GetInstance();
     }
     
-    public Usuario create(Usuario usuario) throws ExistingUsuarioException, SystemErrorException {
+    public Usuario insert(Usuario usuario) throws ExistingUsuarioException, SystemErrorException {
         try (Connection c = DriverManager.getConnection(url)) {
             String q = "INSERT INTO usuarios(nombre, apellido, email, username, password) " +
                        "VALUES (?, ?, ?, ?, ?)";
@@ -59,7 +59,7 @@ public class UsuarioRepository {
         return usuario;
     }
     
-    public Usuario readByUsername(String username) throws UsuarioNotFoundException, SystemErrorException {
+    public Usuario selectByUsername(String username) throws UsuarioNotFoundException, SystemErrorException {
         try (Connection c = DriverManager.getConnection(url)) {
             String q = "SELECT id, nombre, apellido, email, username " +
                        "FROM usuarios " +
@@ -78,7 +78,7 @@ public class UsuarioRepository {
         }
     }
     
-    public Usuario readByUsernameAndPassword(String username, String password) throws UsuarioNotFoundException, SystemErrorException {
+    public Usuario selectByUsernameAndPassword(String username, String password) throws UsuarioNotFoundException, SystemErrorException {
         try (Connection c = DriverManager.getConnection(url)) {
             String q = "SELECT id, nombre, apellido, email, username " +
                        "FROM usuarios " +

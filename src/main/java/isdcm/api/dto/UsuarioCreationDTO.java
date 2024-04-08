@@ -1,11 +1,11 @@
 package isdcm.api.dto;
 
 public class UsuarioCreationDTO {
-    String nombre;
-    String apellido;
-    String email;
-    String username;
-    String password;
+    private String nombre;
+    private String apellido;
+    private String email;
+    private String username;
+    private String password;
     
     // Getters
     public String getNombre() {
