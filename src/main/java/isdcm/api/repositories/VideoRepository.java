@@ -1,6 +1,6 @@
 package isdcm.api.repositories;
 
-import isdcm.api.exceptions.ExistingVideoException;
+import isdcm.api.exceptions.VideoConflictException;
 import isdcm.api.exceptions.SystemErrorException;
 import isdcm.api.exceptions.UsuarioModelException;
 import isdcm.api.exceptions.VideoModelException;
@@ -39,7 +39,7 @@ public class VideoRepository {
         videoMapper = VideoMapper.GetInstance();
     }
     
-    public Video insert(Video video) throws ExistingVideoException, SystemErrorException {
+    public Video insert(Video video) throws VideoConflictException, SystemErrorException {
         String autor = video.getAutor().getUsername();
         Timestamp fechaCreacion = Timestamp.valueOf(video.getFechaCreacion());
         Time duracion = Time.valueOf(video.getDuracion());
@@ -63,7 +63,7 @@ public class VideoRepository {
             System.out.println(e);
             System.out.println(e.getSQLState());
             if (e.getErrorCode() == 30000) {
-                throw new ExistingVideoException(e);
+                throw new VideoConflictException(e);
             }
             throw new SystemErrorException(e);
         } catch (VideoModelException e) {
@@ -175,7 +175,7 @@ public class VideoRepository {
         }
     }
     
-    public void update(Video video) throws VideoNotFoundException, ExistingVideoException, SystemErrorException {
+    public void update(Video video) throws VideoNotFoundException, VideoConflictException, SystemErrorException {
         String autor = video.getAutor().getUsername();
         Timestamp fechaCreacion = Timestamp.valueOf(video.getFechaCreacion());
         Time duracion = Time.valueOf(video.getDuracion());
@@ -201,7 +201,7 @@ public class VideoRepository {
         } catch (SQLException e) {
             System.out.println(e.getMessage());
             if (e.getErrorCode() == 30000) {
-                throw new ExistingVideoException(e);
+                throw new VideoConflictException(e);
             }
             throw new SystemErrorException(e);
         }

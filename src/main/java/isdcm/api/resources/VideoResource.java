@@ -3,7 +3,7 @@ package isdcm.api.resources;
 import isdcm.api.dto.VideoCreationDTO;
 import isdcm.api.dto.VideoDTO;
 import isdcm.api.dto.VideoUpdateDTO;
-import isdcm.api.exceptions.ExistingVideoException;
+import isdcm.api.exceptions.VideoConflictException;
 import isdcm.api.exceptions.SystemErrorException;
 import isdcm.api.exceptions.UsuarioModelException;
 import isdcm.api.exceptions.UsuarioNotFoundException;
@@ -89,7 +89,7 @@ public class VideoResource {
             String msg = e.getMessage();
             System.out.println(msg);
             return Response.status(Status.BAD_REQUEST).entity(msg).build();
-        } catch (ExistingVideoException e) {
+        } catch (VideoConflictException e) {
             String msg = e.getMessage();
             System.out.println(msg);
             return Response.status(Status.CONFLICT).entity(msg).build();
@@ -132,7 +132,7 @@ public class VideoResource {
         } catch (VideoNotFoundException e) {
             System.out.println(e.getMessage());
             return Response.status(Status.NOT_FOUND).build();
-        } catch (ExistingVideoException e) {
+        } catch (VideoConflictException e) {
             String msg = e.getMessage();
             System.out.println(msg);
             return Response.status(Status.CONFLICT).entity(msg).build();

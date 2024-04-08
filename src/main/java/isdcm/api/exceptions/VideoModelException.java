@@ -13,7 +13,7 @@ public class VideoModelException extends Exception {
         VIDEO_DURACION_INVALID,
         VIDEO_REPRODUCCIONES_INVALID,
         VIDEO_DESCRIPCION_REQUIRED,
-        VIDEO_FORMATO_REQUIRED,
+        VIDEO_FORMATO_REQUIRED;
     }
     
     public VideoModelException(VideoErrorCode errorCode) {

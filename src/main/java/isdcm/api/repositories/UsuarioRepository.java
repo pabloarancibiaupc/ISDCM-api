@@ -1,6 +1,6 @@
 package isdcm.api.repositories;
 
-import isdcm.api.exceptions.ExistingUsuarioException;
+import isdcm.api.exceptions.UsuarioConflictException;
 import isdcm.api.exceptions.SystemErrorException;
 import isdcm.api.exceptions.UsuarioModelException;
 import isdcm.api.exceptions.UsuarioNotFoundException;
@@ -30,7 +30,7 @@ public class UsuarioRepository {
         usuarioMapper = UsuarioMapper.GetInstance();
     }
     
-    public Usuario insert(Usuario usuario) throws ExistingUsuarioException, SystemErrorException {
+    public Usuario insert(Usuario usuario) throws UsuarioConflictException, SystemErrorException {
         try (Connection c = DriverManager.getConnection(url)) {
             String q = "INSERT INTO usuarios(nombre, apellido, email, username, password) " +
                        "VALUES (?, ?, ?, ?, ?)";
@@ -49,7 +49,7 @@ public class UsuarioRepository {
         } catch (SQLException e) {
             System.out.println(e);
             if (e.getErrorCode() == 30000) {
-                throw new ExistingUsuarioException(e);
+                throw new UsuarioConflictException(e);
             }
             throw new SystemErrorException(e);
         }  catch (UsuarioModelException e) {

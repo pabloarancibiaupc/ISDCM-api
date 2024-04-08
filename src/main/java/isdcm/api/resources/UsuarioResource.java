@@ -3,7 +3,7 @@ package isdcm.api.resources;
 import isdcm.api.dto.LoginDTO;
 import isdcm.api.dto.UsuarioCreationDTO;
 import isdcm.api.dto.UsuarioDTO;
-import isdcm.api.exceptions.ExistingUsuarioException;
+import isdcm.api.exceptions.UsuarioConflictException;
 import isdcm.api.exceptions.SystemErrorException;
 import isdcm.api.exceptions.UsuarioModelException;
 import isdcm.api.exceptions.UsuarioNotFoundException;
@@ -42,7 +42,7 @@ public class UsuarioResource {
             String msg = e.getMessage();
             System.out.println(msg);
             return Response.status(Status.BAD_REQUEST).entity(msg).build();
-        } catch (ExistingUsuarioException e) {
+        } catch (UsuarioConflictException e) {
             String msg = e.getMessage();
             System.out.println(msg);
             return Response.status(Status.CONFLICT).entity(msg).build();
