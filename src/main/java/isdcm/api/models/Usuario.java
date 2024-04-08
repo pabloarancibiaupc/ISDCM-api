@@ -4,6 +4,7 @@ import isdcm.api.exceptions.UsuarioModelException;
 import isdcm.api.exceptions.UsuarioModelException.UsuarioErrorCode;
 
 public class Usuario {
+    
     private static final String EMAIL_REGEX = "^[a-z0-9_+-]+(?:\\.[a-z0-9_+-]+)*@(?:[a-z0-9-]+\\.)+[a-z]{2,7}$";
     
     private Integer id;
@@ -13,16 +14,20 @@ public class Usuario {
     private String username;
     private String password;
     
-    public Usuario(String nombre, String apellido, String email, String username, String password) throws UsuarioModelException {
-        this(null, nombre, apellido, email, username, password);
+    public Usuario(String username) throws UsuarioModelException {
+        this.id = null;
+        this.nombre = null;
+        this.apellido = null;
+        this.email = null;
+        if (username == null || username.isBlank()) {
+            throw new UsuarioModelException(UsuarioErrorCode.USUARIO_USERNAME_REQUIRED);
+        }
+        this.username = username.trim();
+        this.password = null;
     }
     
-    public Usuario(Integer id, String nombre, String apellido, String email, String username) throws UsuarioModelException {
-        this(id, nombre, apellido, email, username, null);
-    }
-    
-    public Usuario(Integer id, String nombre, String apellido, String email, String username, String password) throws UsuarioModelException {
-        this.id = id;
+    private Usuario(String nombre, String apellido, String email, String username) throws UsuarioModelException {
+        this(username);
         if (nombre == null || nombre.isBlank()) {
             throw new UsuarioModelException(UsuarioErrorCode.USUARIO_NOMBRE_REQUIRED);
         }
@@ -39,11 +44,19 @@ public class Usuario {
             throw new UsuarioModelException(UsuarioErrorCode.USUARIO_EMAIL_INVALID);
         }
         this.email = email;
-        if (username == null || username.isBlank()) {
-            throw new UsuarioModelException(UsuarioErrorCode.USUARIO_USERNAME_REQUIRED);
+    }
+    
+    public Usuario(String nombre, String apellido, String email, String username, String password) throws UsuarioModelException {
+        this(nombre, apellido, email, username);
+        if (password == null || password.isBlank()) {
+            throw new UsuarioModelException(UsuarioErrorCode.USUARIO_PASSWORD_REQUIRED);
         }
-        this.username = username.trim();
         this.password = password;
+    }
+    
+    public Usuario(Integer id, String nombre, String apellido, String email, String username) throws UsuarioModelException {
+        this(nombre, apellido, email, username);
+        setId(id);
     }
     
     // Getters
@@ -67,7 +80,13 @@ public class Usuario {
     }
     
     // Setters
-    public void setId(Integer id) {
+    public final void setId(Integer id) throws UsuarioModelException {
+        if (id == null) {
+            throw new UsuarioModelException(UsuarioErrorCode.USUARIO_ID_REQUIRED);
+        }
+        if (id < 0) {
+            throw new UsuarioModelException(UsuarioErrorCode.USUARIO_ID_INVALID);
+        }
         this.id = id;
     }
 }

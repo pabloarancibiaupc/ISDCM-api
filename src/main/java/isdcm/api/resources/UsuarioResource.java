@@ -1,6 +1,7 @@
 package isdcm.api.resources;
 
 import isdcm.api.dto.LoginDTO;
+import isdcm.api.dto.UsuarioCreationDTO;
 import isdcm.api.dto.UsuarioDTO;
 import isdcm.api.exceptions.ExistingUsuarioException;
 import isdcm.api.exceptions.SystemErrorException;
@@ -31,11 +32,12 @@ public class UsuarioResource {
     }
     
     @POST
-    public Response post(UsuarioDTO dtoReq) {
-        Usuario usuarioRes;
+    public Response post(UsuarioCreationDTO dtoReq) {
         try {
             Usuario usuarioReq = usuarioMapper.toModel(dtoReq);
-            usuarioRes = usuarioRepo.create(usuarioReq);
+            Usuario usuarioRes = usuarioRepo.create(usuarioReq);
+            UsuarioDTO dtoRes = usuarioMapper.toDTO(usuarioRes);
+            return Response.status(Response.Status.CREATED).entity(dtoRes).build();
         } catch (UsuarioModelException e) {
             String msg = e.getMessage();
             System.out.println(msg);
@@ -48,8 +50,6 @@ public class UsuarioResource {
             System.out.println(e.getMessage());
             return Response.status(Status.INTERNAL_SERVER_ERROR).build();
         }
-        UsuarioDTO dtoRes = usuarioMapper.toDTO(usuarioRes);
-        return Response.status(Response.Status.CREATED).entity(dtoRes).build();
     }
     
     @POST
@@ -57,9 +57,10 @@ public class UsuarioResource {
     public Response login(LoginDTO dto) {
         String username = dto.getUsername();
         String password = dto.getPassword();
-        Usuario usuario;
         try {
-            usuario = usuarioRepo.readByUsernameAndPassword(username, password);
+            Usuario usuario = usuarioRepo.readByUsernameAndPassword(username, password);
+            UsuarioDTO dtoRes = usuarioMapper.toDTO(usuario);
+            return Response.status(Response.Status.OK).entity(dtoRes).build();
         } catch (UsuarioNotFoundException e) {
             System.out.println(e.getMessage());
             return Response.status(Status.UNAUTHORIZED).build();
@@ -67,7 +68,5 @@ public class UsuarioResource {
             System.out.println(e.getMessage());
             return Response.status(Status.INTERNAL_SERVER_ERROR).build();
         }
-        UsuarioDTO dtoRes = usuarioMapper.toDTO(usuario);
-        return Response.status(Response.Status.OK).entity(dtoRes).build();
     }
 }

@@ -1,14 +1,19 @@
 package isdcm.api.resources;
 
+import isdcm.api.dto.VideoCreationDTO;
 import isdcm.api.dto.VideoDTO;
+import isdcm.api.dto.VideoUpdateDTO;
 import isdcm.api.exceptions.ExistingVideoException;
 import isdcm.api.exceptions.SystemErrorException;
 import isdcm.api.exceptions.UsuarioModelException;
+import isdcm.api.exceptions.UsuarioNotFoundException;
 import isdcm.api.exceptions.VideoModelException;
 import isdcm.api.exceptions.VideoModelException.VideoErrorCode;
 import isdcm.api.exceptions.VideoNotFoundException;
 import isdcm.api.mappers.VideoMapper;
+import isdcm.api.models.Usuario;
 import isdcm.api.models.Video;
+import isdcm.api.repositories.UsuarioRepository;
 import isdcm.api.repositories.VideoRepository;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
@@ -34,10 +39,12 @@ import java.util.ArrayList;
 public class VideoResource {
     
     VideoRepository videoRepo;
+    UsuarioRepository usuarioRepo;
     VideoMapper videoMapper;
     
     public VideoResource() {
         videoRepo = VideoRepository.GetInstance();
+        usuarioRepo = UsuarioRepository.GetInstance();
         videoMapper = VideoMapper.GetInstance();
     }
     
@@ -69,6 +76,8 @@ public class VideoResource {
             } else {
                 videos = videoRepo.readAll();
             }
+            ArrayList<VideoDTO> dtos = videoMapper.toDTOs(videos);
+            return Response.status(Status.OK).entity(dtos).build();
         } catch (DateTimeParseException e) {
             System.out.println(e.getMessage());
             String message = VideoErrorCode.VIDEO_DURACION_INVALID.toString();
@@ -77,16 +86,18 @@ public class VideoResource {
             System.out.println(e.getMessage());
             return Response.status(Status.INTERNAL_SERVER_ERROR).build();
         }
-        ArrayList<VideoDTO> dtos = videoMapper.toDTOs(videos);
-        return Response.status(Status.OK).entity(dtos).build();
     }
     
     @POST
-    public Response post(VideoDTO dtoReq) {
-        Video videoRes;
+    public Response post(VideoCreationDTO dtoReq) {
         try {
             Video videoReq = videoMapper.toModel(dtoReq);
-            videoRes = videoRepo.create(videoReq);
+            Video videoRes = videoRepo.create(videoReq);
+            String username = videoRes.getAutor().getUsername();
+            Usuario autor = usuarioRepo.readByUsername(username);
+            videoRes.setAutor(autor);
+            VideoDTO dtoRes = videoMapper.toDTO(videoRes);
+            return Response.status(Status.CREATED).entity(dtoRes).build();
         } catch (VideoModelException | UsuarioModelException e) {
             String msg = e.getMessage();
             System.out.println(msg);
@@ -95,21 +106,20 @@ public class VideoResource {
             String msg = e.getMessage();
             System.out.println(msg);
             return Response.status(Status.CONFLICT).entity(msg).build();
-        } catch (SystemErrorException e) {
+        } catch (SystemErrorException | UsuarioNotFoundException e) {
             System.out.println(e.getMessage());
             return Response.status(Status.INTERNAL_SERVER_ERROR).build();
         }
-        VideoDTO dtoRes = videoMapper.toDTO(videoRes);
-        return Response.status(Status.CREATED).entity(dtoRes).build();
     }
     
     @GET
     @Path("{id: [0-9]+}")
     public Response getById(@PathParam("id") String idParam) {
         int id = Integer.parseInt(idParam);
-        Video video;
         try {
-            video = videoRepo.readById(id);
+            Video video = videoRepo.readById(id);
+            VideoDTO dto = videoMapper.toDTO(video);
+            return Response.status(Status.OK).entity(dto).build();
         } catch (VideoNotFoundException e) {
             System.out.println(e.getMessage());
             return Response.status(Status.NOT_FOUND).build();
@@ -117,29 +127,33 @@ public class VideoResource {
             System.out.println(e.getMessage());
             return Response.status(Status.INTERNAL_SERVER_ERROR).build();
         }
-        VideoDTO dto = videoMapper.toDTO(video);
-        return Response.status(Status.OK).entity(dto).build();
+        
     }
     
     @PUT
     @Path("{id: [0-9]+}")
-    public Response putById(@PathParam("id") String idParam, VideoDTO dto) {
+    public Response putById(@PathParam("id") String idParam, VideoUpdateDTO dto) {
         int id = Integer.parseInt(idParam);
-        dto.setId(id);
         try {
             Video video = videoMapper.toModel(dto);
+            video.setId(id);
             videoRepo.update(video);
+            return Response.status(Status.NO_CONTENT).build();
         } catch (VideoModelException | UsuarioModelException e) {
             System.out.println(e.getMessage());
             return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
         } catch (VideoNotFoundException e) {
             System.out.println(e.getMessage());
             return Response.status(Status.NOT_FOUND).build();
+        } catch (ExistingVideoException e) {
+            String msg = e.getMessage();
+            System.out.println(msg);
+            return Response.status(Status.CONFLICT).entity(msg).build();
         } catch (SystemErrorException e) {
             System.out.println(e.getMessage());
             return Response.status(Status.INTERNAL_SERVER_ERROR).build();
         }
-        return Response.status(Status.OK).build();
+        
     }
     
     private LocalDateTime[] parseFechaCreacionParam(String fechaCreacionParam) throws DateTimeParseException {

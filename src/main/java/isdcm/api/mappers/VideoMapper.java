@@ -1,7 +1,9 @@
 package isdcm.api.mappers;
 
 import isdcm.api.dto.UsuarioDTO;
+import isdcm.api.dto.VideoCreationDTO;
 import isdcm.api.dto.VideoDTO;
+import isdcm.api.dto.VideoUpdateDTO;
 import isdcm.api.exceptions.UsuarioModelException;
 import isdcm.api.exceptions.VideoModelException;
 import isdcm.api.models.Usuario;
@@ -55,7 +57,7 @@ public class VideoMapper {
         return dto;
     }
     
-    public ArrayList<Video> toModels(ResultSet rs) throws SQLException, VideoModelException, UsuarioModelException {
+    public ArrayList<Video> toModels(ResultSet rs) throws SQLException, UsuarioModelException, VideoModelException {
         ArrayList<Video> videos = new ArrayList<>();
         while (rs.next()) {
             Video video = toModel(rs);
@@ -64,7 +66,7 @@ public class VideoMapper {
         return videos;
     }
     
-    public Video toModel(VideoDTO dto) throws VideoModelException, UsuarioModelException {
+    public Video toModel(VideoDTO dto) throws UsuarioModelException, VideoModelException {
         Integer id = dto.getId();
         String titulo = dto.getTitulo();
         Usuario autor = usuarioMapper.toModel(dto.getAutor());
@@ -76,7 +78,27 @@ public class VideoMapper {
         return new Video(id, titulo, autor, fechaCreacion, duracion, reproducciones, descripcion, formato);
     }
     
-    public Video toModel(ResultSet rs) throws SQLException, VideoModelException, UsuarioModelException {
+    public Video toModel(VideoCreationDTO dto) throws UsuarioModelException, VideoModelException {
+        String titulo = dto.getTitulo();
+        Usuario autor = new Usuario(dto.getAutor());
+        LocalTime duracion = LocalTime.parse(dto.getDuracion());
+        String descripcion = dto.getDescripcion();
+        String formato = dto.getFormato();
+        return new Video(titulo, autor, duracion, descripcion, formato);
+    }
+    
+    public Video toModel(VideoUpdateDTO dto) throws UsuarioModelException, VideoModelException {
+        String titulo = dto.getTitulo();
+        Usuario autor = new Usuario(dto.getAutor());
+        LocalDateTime fechaCreacion = LocalDateTime.parse(dto.getFechaCreacion());
+        LocalTime duracion = LocalTime.parse(dto.getDuracion());
+        int reproducciones = dto.getReproducciones();
+        String descripcion = dto.getDescripcion();
+        String formato = dto.getFormato();
+        return new Video(titulo, autor, fechaCreacion, duracion, reproducciones, descripcion, formato);
+    }
+    
+    public Video toModel(ResultSet rs) throws SQLException, UsuarioModelException, VideoModelException {
         int videoId = rs.getInt("video_id");
         String titulo = rs.getString("titulo");
         LocalDateTime fechaCreacion = rs.getTimestamp("fecha_creacion").toLocalDateTime();

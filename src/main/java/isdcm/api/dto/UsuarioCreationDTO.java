@@ -1,16 +1,13 @@
 package isdcm.api.dto;
 
-public class UsuarioDTO {
-    Integer id;
+public class UsuarioCreationDTO {
     String nombre;
     String apellido;
     String email;
     String username;
+    String password;
     
     // Getters
-    public Integer getId() {
-        return id;
-    }
     public String getNombre() {
         return nombre;
     }
@@ -23,11 +20,11 @@ public class UsuarioDTO {
     public String getUsername() {
         return username;
     }
+    public String getPassword() {
+        return password;
+    }
     
     // Setters
-    public void setId(Integer id) {
-        this.id = id;
-    }
     public void setNombre(String nombre) {
         this.nombre = nombre;
     }
@@ -39,5 +36,8 @@ public class UsuarioDTO {
     }
     public void setUsername(String username) {
         this.username = username;
+    }
+    public void setPassword(String password) {
+        this.password = password;
     }
 }

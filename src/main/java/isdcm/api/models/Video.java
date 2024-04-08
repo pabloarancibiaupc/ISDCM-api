@@ -18,30 +18,19 @@ public class Video {
     private String descripcion;
     private String formato;
     
-    public Video(Integer id, String titulo, Usuario autor, LocalDateTime fechaCreacion, LocalTime duracion, int reproducciones, String descripcion, String formato)
-            throws VideoModelException
-    {
-        this.id = id;
+    public Video(String titulo, Usuario autor, LocalTime duracion, String descripcion, String formato) throws VideoModelException {
+        this.id = null;
         if (titulo == null || titulo.isBlank()) {
             throw new VideoModelException(VideoErrorCode.VIDEO_TITULO_REQUIRED);
         }
         this.titulo = titulo.trim();
-        if (autor == null) {
-            throw new VideoModelException(VideoErrorCode.VIDEO_AUTOR_REQUIRED);
-        }
-        this.autor = autor;
-        if (fechaCreacion == null) {
-            throw new VideoModelException(VideoErrorCode.VIDEO_FECHA_CREACION_REQUIRED);
-        }
-        this.fechaCreacion = fechaCreacion;
+        setAutor(autor);
+        this.fechaCreacion = LocalDateTime.now();
         if (duracion == null) {
             throw new VideoModelException(VideoErrorCode.VIDEO_DURACION_REQUIRED);
         }
         this.duracion = duracion;
-        if (reproducciones < 0) {
-            throw new VideoModelException(VideoErrorCode.VIDEO_REPRODUCCIONES_NEGATIVE);
-        }
-        this.reproducciones = reproducciones;
+        this.reproducciones = 0;
         if (descripcion == null || descripcion.isBlank()) {
             throw new VideoModelException(VideoErrorCode.VIDEO_DESCRIPCION_REQUIRED);
         }
@@ -50,6 +39,27 @@ public class Video {
             throw new VideoModelException(VideoErrorCode.VIDEO_FORMATO_REQUIRED);
         }
         this.formato = formato.trim();
+    }
+    
+    public Video(String titulo, Usuario autor, LocalDateTime fechaCreacion, LocalTime duracion, int reproducciones, String descripcion, String formato)
+            throws VideoModelException
+    {
+        this(titulo, autor, duracion, descripcion, formato);
+        if (fechaCreacion == null) {
+            throw new VideoModelException(VideoErrorCode.VIDEO_FECHA_CREACION_REQUIRED);
+        }
+        this.fechaCreacion = fechaCreacion;
+        if (reproducciones < 0) {
+            throw new VideoModelException(VideoErrorCode.VIDEO_REPRODUCCIONES_INVALID);
+        }
+        this.reproducciones = reproducciones;
+    }
+    
+    public Video(Integer id, String titulo, Usuario autor, LocalDateTime fechaCreacion, LocalTime duracion, int reproducciones, String descripcion, String formato)
+            throws VideoModelException
+    {
+        this(titulo, autor, fechaCreacion, duracion, reproducciones, descripcion, formato);
+        setId(id);
     }
     
     public static ArrayList<Video> SortByQuery(ArrayList<Video> videos, String query) {
@@ -119,7 +129,19 @@ public class Video {
     }
     
     // Setters
-    public void setId(Integer id) {
+    public final void setId(Integer id) throws VideoModelException {
+        if (id == null) {
+            throw new VideoModelException(VideoErrorCode.VIDEO_ID_REQUIRED);
+        }
+        if (id < 0) {
+            throw new VideoModelException(VideoErrorCode.VIDEO_ID_INVALID);
+        }
         this.id = id;
+    }
+    public final void setAutor(Usuario autor) throws VideoModelException {
+        if (autor == null) {
+            throw new VideoModelException(VideoErrorCode.VIDEO_AUTOR_REQUIRED);
+        }
+        this.autor = autor;
     }
 }

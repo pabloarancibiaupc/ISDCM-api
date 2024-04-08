@@ -1,5 +1,6 @@
 package isdcm.api.mappers;
 
+import isdcm.api.dto.UsuarioCreationDTO;
 import isdcm.api.dto.UsuarioDTO;
 import isdcm.api.exceptions.UsuarioModelException;
 import isdcm.api.models.Usuario;
@@ -25,7 +26,6 @@ public class UsuarioMapper {
         dto.setApellido(usuario.getApellido());
         dto.setEmail(usuario.getEmail());
         dto.setUsername(usuario.getUsername());
-        dto.setPassword(usuario.getPassword());
         return dto;
     }
     
@@ -35,8 +35,16 @@ public class UsuarioMapper {
         String apellido = dto.getApellido();
         String email = dto.getEmail();
         String username = dto.getUsername();
+        return new Usuario(id, nombre, apellido, email, username);
+    }
+    
+    public Usuario toModel(UsuarioCreationDTO dto) throws UsuarioModelException {
+        String nombre = dto.getNombre();
+        String apellido = dto.getApellido();
+        String email = dto.getEmail();
+        String username = dto.getUsername();
         String password = dto.getPassword();
-        return new Usuario(id, nombre, apellido, email, username, password);
+        return new Usuario(nombre, apellido, email, username, password);
     }
     
     public Usuario toModel(ResultSet rs) throws SQLException, UsuarioModelException {

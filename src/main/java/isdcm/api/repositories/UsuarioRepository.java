@@ -52,8 +52,30 @@ public class UsuarioRepository {
                 throw new ExistingUsuarioException(e);
             }
             throw new SystemErrorException(e);
+        }  catch (UsuarioModelException e) {
+            System.out.println(e.getMessage());
+            throw new SystemErrorException(e);
         }
         return usuario;
+    }
+    
+    public Usuario readByUsername(String username) throws UsuarioNotFoundException, SystemErrorException {
+        try (Connection c = DriverManager.getConnection(url)) {
+            String q = "SELECT id, nombre, apellido, email, username " +
+                       "FROM usuarios " +
+                       "WHERE username = ?";
+            PreparedStatement ps = c.prepareStatement(q);
+            ps.setString(1, username);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return usuarioMapper.toModel(rs);
+            } else {
+                throw new UsuarioNotFoundException();
+            }
+        } catch (SQLException | UsuarioModelException e) {
+            System.out.println(e.getMessage());
+            throw new SystemErrorException(e);
+        }
     }
     
     public Usuario readByUsernameAndPassword(String username, String password) throws UsuarioNotFoundException, SystemErrorException {
