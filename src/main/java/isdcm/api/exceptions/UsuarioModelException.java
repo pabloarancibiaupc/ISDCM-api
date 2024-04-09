@@ -10,7 +10,9 @@ public class UsuarioModelException extends Exception {
         USUARIO_EMAIL_REQUIRED,
         USUARIO_EMAIL_INVALID,
         USUARIO_USERNAME_REQUIRED,
-        USUARIO_PASSWORD_REQUIRED;
+        USUARIO_USERNAME_INVALID,
+        USUARIO_PASSWORD_REQUIRED,
+        USUARIO_PASSWORD_INVALID;
     }
     
     public UsuarioModelException(UsuarioErrorCode errorCode) {

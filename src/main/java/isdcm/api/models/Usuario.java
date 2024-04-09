@@ -6,6 +6,7 @@ import isdcm.api.exceptions.UsuarioModelException.UsuarioErrorCode;
 public class Usuario {
     
     private static final String EMAIL_REGEX = "^[a-z0-9_+-]+(?:\\.[a-z0-9_+-]+)*@(?:[a-z0-9-]+\\.)+[a-z]{2,7}$";
+    private static final String USERNAME_REGEX = "^[a-zA-Z][a-zA-Z0-9_-]{2,25}$*";
     
     private Integer id;
     private String nombre;
@@ -21,6 +22,9 @@ public class Usuario {
         this.email = null;
         if (username == null || username.isBlank()) {
             throw new UsuarioModelException(UsuarioErrorCode.USUARIO_USERNAME_REQUIRED);
+        }
+        if (!username.matches(USERNAME_REGEX)) {
+            throw new UsuarioModelException(UsuarioErrorCode.USUARIO_USERNAME_INVALID);
         }
         this.username = username.trim();
         this.password = null;
@@ -51,12 +55,32 @@ public class Usuario {
         if (password == null || password.isBlank()) {
             throw new UsuarioModelException(UsuarioErrorCode.USUARIO_PASSWORD_REQUIRED);
         }
+        if (password.length() < 8 || !validatePassword(password)) {
+            throw new UsuarioModelException(UsuarioErrorCode.USUARIO_PASSWORD_INVALID);
+        }
         this.password = password;
     }
     
     public Usuario(Integer id, String nombre, String apellido, String email, String username) throws UsuarioModelException {
         this(nombre, apellido, email, username);
         setId(id);
+    }
+    
+    private static boolean validatePassword(String password) {
+        boolean lowercase = false;
+        boolean uppercase = false;
+        boolean digit = false;
+        for (int i = 0; i < password.length(); ++i) {
+            char c = password.charAt(i);
+            if (Character.isLowerCase(c)) {
+                lowercase = true;
+            } else if (Character.isUpperCase(c)) {
+                uppercase = true;
+            } else if (Character.isDigit(c)) {
+                digit = true;
+            }
+        }
+        return lowercase & uppercase & digit;
     }
     
     // Getters
