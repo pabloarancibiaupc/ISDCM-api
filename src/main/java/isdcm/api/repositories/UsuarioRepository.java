@@ -2,7 +2,8 @@ package isdcm.api.repositories;
 
 import isdcm.api.exceptions.UsuarioConflictException;
 import isdcm.api.exceptions.SystemErrorException;
-import isdcm.api.exceptions.UsuarioModelException;
+import isdcm.api.exceptions.UsuarioConflictException.UsuarioConflictError;
+import isdcm.api.exceptions.UsuarioException;
 import isdcm.api.exceptions.UsuarioNotFoundException;
 import isdcm.api.mappers.UsuarioMapper;
 import isdcm.api.models.Usuario;
@@ -47,13 +48,13 @@ public class UsuarioRepository {
                 usuario.setId(id);
             }
         } catch (SQLException e) {
-            System.out.println(e);
-            if (e.getErrorCode() == 30000) {
-                throw new UsuarioConflictException(e);
+            int error = Integer.parseInt(e.getSQLState());
+            System.out.println("SQLState: " + error);
+            if (error == 23505) {
+                throw new UsuarioConflictException(UsuarioConflictError.EXISTING_USUARIO, e);
             }
             throw new SystemErrorException(e);
-        }  catch (UsuarioModelException e) {
-            System.out.println(e.getMessage());
+        }  catch (UsuarioException e) {
             throw new SystemErrorException(e);
         }
         return usuario;
@@ -72,8 +73,7 @@ public class UsuarioRepository {
             } else {
                 throw new UsuarioNotFoundException();
             }
-        } catch (SQLException | UsuarioModelException e) {
-            System.out.println(e.getMessage());
+        } catch (SQLException | UsuarioException e) {
             throw new SystemErrorException(e);
         }
     }
@@ -92,8 +92,7 @@ public class UsuarioRepository {
             } else {
                 throw new UsuarioNotFoundException();
             }
-        } catch (SQLException | UsuarioModelException e) {
-            System.out.println(e.getMessage());
+        } catch (SQLException | UsuarioException e) {
             throw new SystemErrorException(e);
         }
     }

@@ -1,12 +1,12 @@
 package isdcm.api.models;
 
-import isdcm.api.exceptions.UsuarioModelException;
-import isdcm.api.exceptions.UsuarioModelException.UsuarioErrorCode;
+import isdcm.api.exceptions.UsuarioException;
+import isdcm.api.exceptions.UsuarioException.UsuarioError;
 
 public class Usuario {
     
     private static final String EMAIL_REGEX = "^[a-z0-9_+-]+(?:\\.[a-z0-9_+-]+)*@(?:[a-z0-9-]+\\.)+[a-z]{2,7}$";
-    private static final String USERNAME_REGEX = "^[a-zA-Z][a-zA-Z0-9_-]{2,25}$*";
+    private static final String USERNAME_REGEX = "^[a-zA-Z][a-zA-Z0-9_.-]{2,30}$";
     
     private Integer id;
     private String nombre;
@@ -15,53 +15,54 @@ public class Usuario {
     private String username;
     private String password;
     
-    public Usuario(String username) throws UsuarioModelException {
+    public Usuario(String username) throws UsuarioException {
         this.id = null;
         this.nombre = null;
         this.apellido = null;
         this.email = null;
         if (username == null || username.isBlank()) {
-            throw new UsuarioModelException(UsuarioErrorCode.USUARIO_USERNAME_REQUIRED);
+            throw new UsuarioException(UsuarioError.USUARIO_USERNAME_REQUIRED);
         }
+        username = username.trim();
         if (!username.matches(USERNAME_REGEX)) {
-            throw new UsuarioModelException(UsuarioErrorCode.USUARIO_USERNAME_INVALID);
+            throw new UsuarioException(UsuarioError.USUARIO_USERNAME_INVALID);
         }
-        this.username = username.trim();
+        this.username = username;
         this.password = null;
     }
     
-    private Usuario(String nombre, String apellido, String email, String username) throws UsuarioModelException {
+    private Usuario(String nombre, String apellido, String email, String username) throws UsuarioException {
         this(username);
         if (nombre == null || nombre.isBlank()) {
-            throw new UsuarioModelException(UsuarioErrorCode.USUARIO_NOMBRE_REQUIRED);
+            throw new UsuarioException(UsuarioError.USUARIO_NOMBRE_REQUIRED);
         }
         this.nombre = nombre.trim();
         if (apellido == null || apellido.isBlank()) {
-            throw new UsuarioModelException(UsuarioErrorCode.USUARIO_APELLIDO_REQUIRED);
+            throw new UsuarioException(UsuarioError.USUARIO_APELLIDO_REQUIRED);
         }
         this.apellido = apellido.trim();
         if (email == null || email.isBlank()) {
-            throw new UsuarioModelException(UsuarioErrorCode.USUARIO_EMAIL_REQUIRED);
+            throw new UsuarioException(UsuarioError.USUARIO_EMAIL_REQUIRED);
         }
         email = email.toLowerCase().trim();
         if (!email.matches(EMAIL_REGEX)) {
-            throw new UsuarioModelException(UsuarioErrorCode.USUARIO_EMAIL_INVALID);
+            throw new UsuarioException(UsuarioError.USUARIO_EMAIL_INVALID);
         }
         this.email = email;
     }
     
-    public Usuario(String nombre, String apellido, String email, String username, String password) throws UsuarioModelException {
+    public Usuario(String nombre, String apellido, String email, String username, String password) throws UsuarioException {
         this(nombre, apellido, email, username);
         if (password == null || password.isBlank()) {
-            throw new UsuarioModelException(UsuarioErrorCode.USUARIO_PASSWORD_REQUIRED);
+            throw new UsuarioException(UsuarioError.USUARIO_PASSWORD_REQUIRED);
         }
         if (password.length() < 8 || !validatePassword(password)) {
-            throw new UsuarioModelException(UsuarioErrorCode.USUARIO_PASSWORD_INVALID);
+            throw new UsuarioException(UsuarioError.USUARIO_PASSWORD_INVALID);
         }
         this.password = password;
     }
     
-    public Usuario(Integer id, String nombre, String apellido, String email, String username) throws UsuarioModelException {
+    public Usuario(Integer id, String nombre, String apellido, String email, String username) throws UsuarioException {
         this(nombre, apellido, email, username);
         setId(id);
     }
@@ -104,12 +105,12 @@ public class Usuario {
     }
     
     // Setters
-    public final void setId(Integer id) throws UsuarioModelException {
+    public final void setId(Integer id) throws UsuarioException {
         if (id == null) {
-            throw new UsuarioModelException(UsuarioErrorCode.USUARIO_ID_REQUIRED);
+            throw new UsuarioException(UsuarioError.USUARIO_ID_REQUIRED);
         }
         if (id < 0) {
-            throw new UsuarioModelException(UsuarioErrorCode.USUARIO_ID_INVALID);
+            throw new UsuarioException(UsuarioError.USUARIO_ID_INVALID);
         }
         this.id = id;
     }

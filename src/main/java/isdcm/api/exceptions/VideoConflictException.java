@@ -2,13 +2,16 @@ package isdcm.api.exceptions;
 
 public class VideoConflictException extends Exception {
     
-    public final static String ERROR_CODE = "VIDEO_CONFLICT";
-    
-    public VideoConflictException() {
-        super(ERROR_CODE);
+    public enum VideoConflictError {
+        EXISTING_VIDEO,
+        AUTOR_NOT_EXISTS;
     }
     
-    public VideoConflictException(Throwable cause) {
-        super(ERROR_CODE, cause);
+    public VideoConflictException(VideoConflictError error) {
+        super(error.toString());
+    }
+    
+    public VideoConflictException(VideoConflictError error, Throwable cause) {
+        super(error.toString(), cause);
     }
 }

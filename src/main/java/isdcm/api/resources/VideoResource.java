@@ -5,10 +5,9 @@ import isdcm.api.dto.VideoDTO;
 import isdcm.api.dto.VideoUpdateDTO;
 import isdcm.api.exceptions.VideoConflictException;
 import isdcm.api.exceptions.SystemErrorException;
-import isdcm.api.exceptions.UsuarioModelException;
+import isdcm.api.exceptions.UsuarioException;
 import isdcm.api.exceptions.UsuarioNotFoundException;
-import isdcm.api.exceptions.VideoModelException;
-import isdcm.api.exceptions.VideoModelException.VideoErrorCode;
+import isdcm.api.exceptions.VideoException;
 import isdcm.api.exceptions.VideoNotFoundException;
 import isdcm.api.mappers.VideoMapper;
 import isdcm.api.models.Usuario;
@@ -26,7 +25,6 @@ import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.Response.Status;
-import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 
 @Path("videos")
@@ -65,12 +63,12 @@ public class VideoResource {
             }
             ArrayList<VideoDTO> dtos = videoMapper.toDTOs(videos);
             return Response.status(Status.OK).entity(dtos).build();
-        } catch (DateTimeParseException e) {
-            System.out.println(e.getMessage());
-            String message = VideoErrorCode.VIDEO_DURACION_INVALID.toString();
-            return Response.status(Status.BAD_REQUEST).entity(message).build();
+        } catch (VideoException e) {
+            System.out.println(e);
+            String msg = e.getMessage();
+            return Response.status(Status.BAD_REQUEST).entity(msg).build();
         } catch (SystemErrorException e) {
-            System.out.println(e.getMessage());
+            System.out.println(e);
             return Response.status(Status.INTERNAL_SERVER_ERROR).build();
         }
     }
@@ -85,16 +83,16 @@ public class VideoResource {
             videoRes.setAutor(autor);
             VideoDTO dtoRes = videoMapper.toDTO(videoRes);
             return Response.status(Status.CREATED).entity(dtoRes).build();
-        } catch (VideoModelException | UsuarioModelException e) {
+        } catch (VideoException | UsuarioException e) {
+            System.out.println(e);
             String msg = e.getMessage();
-            System.out.println(msg);
             return Response.status(Status.BAD_REQUEST).entity(msg).build();
         } catch (VideoConflictException e) {
+            System.out.println(e);
             String msg = e.getMessage();
-            System.out.println(msg);
             return Response.status(Status.CONFLICT).entity(msg).build();
         } catch (SystemErrorException | UsuarioNotFoundException e) {
-            System.out.println(e.getMessage());
+            System.out.println(e);
             return Response.status(Status.INTERNAL_SERVER_ERROR).build();
         }
     }
@@ -108,10 +106,10 @@ public class VideoResource {
             VideoDTO dto = videoMapper.toDTO(video);
             return Response.status(Status.OK).entity(dto).build();
         } catch (VideoNotFoundException e) {
-            System.out.println(e.getMessage());
+            System.out.println(e);
             return Response.status(Status.NOT_FOUND).build();
         } catch (SystemErrorException e) {
-            System.out.println(e.getMessage());
+            System.out.println(e);
             return Response.status(Status.INTERNAL_SERVER_ERROR).build();
         }
         
@@ -126,20 +124,20 @@ public class VideoResource {
             video.setId(id);
             videoRepo.update(video);
             return Response.status(Status.NO_CONTENT).build();
-        } catch (VideoModelException | UsuarioModelException e) {
-            System.out.println(e.getMessage());
-            return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
+        } catch (VideoException | UsuarioException e) {
+            System.out.println(e);
+            String msg = e.getMessage();
+            return Response.status(Status.BAD_REQUEST).entity(msg).build();
         } catch (VideoNotFoundException e) {
-            System.out.println(e.getMessage());
+            System.out.println(e);
             return Response.status(Status.NOT_FOUND).build();
         } catch (VideoConflictException e) {
+            System.out.println(e);
             String msg = e.getMessage();
-            System.out.println(msg);
             return Response.status(Status.CONFLICT).entity(msg).build();
         } catch (SystemErrorException e) {
-            System.out.println(e.getMessage());
+            System.out.println(e);
             return Response.status(Status.INTERNAL_SERVER_ERROR).build();
         }
-        
     }
 }

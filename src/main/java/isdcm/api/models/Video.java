@@ -1,7 +1,7 @@
 package isdcm.api.models;
 
-import isdcm.api.exceptions.VideoModelException;
-import isdcm.api.exceptions.VideoModelException.VideoErrorCode;
+import isdcm.api.exceptions.VideoException;
+import isdcm.api.exceptions.VideoException.VideoError;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeParseException;
@@ -19,10 +19,10 @@ public class Video {
     private String descripcion;
     private String formato;
     
-    private Video(String titulo, Usuario autor, String descripcion, String formato) throws VideoModelException {
+    private Video(String titulo, Usuario autor, String descripcion, String formato) throws VideoException {
         this.id = null;
         if (titulo == null || titulo.isBlank()) {
-            throw new VideoModelException(VideoErrorCode.VIDEO_TITULO_REQUIRED);
+            throw new VideoException(VideoError.VIDEO_TITULO_REQUIRED);
         }
         this.titulo = titulo.trim();
         setAutor(autor);
@@ -30,76 +30,76 @@ public class Video {
         this.duracion = null;
         this.reproducciones = 0;
         if (descripcion == null || descripcion.isBlank()) {
-            throw new VideoModelException(VideoErrorCode.VIDEO_DESCRIPCION_REQUIRED);
+            throw new VideoException(VideoError.VIDEO_DESCRIPCION_REQUIRED);
         }
         this.descripcion = descripcion.trim();
         if (formato == null || formato.isBlank()) {
-            throw new VideoModelException(VideoErrorCode.VIDEO_FORMATO_REQUIRED);
+            throw new VideoException(VideoError.VIDEO_FORMATO_REQUIRED);
         }
         this.formato = formato.trim();
     }
     
-    public Video(String titulo, Usuario autor, String duracion, String descripcion, String formato) throws VideoModelException {
+    public Video(String titulo, Usuario autor, String duracion, String descripcion, String formato) throws VideoException {
         this(titulo, autor, descripcion, formato);
         if (duracion == null) {
-            throw new VideoModelException(VideoErrorCode.VIDEO_DURACION_REQUIRED);
+            throw new VideoException(VideoError.VIDEO_DURACION_REQUIRED);
         }
         try {
             this.duracion = LocalTime.parse(duracion);
         } catch (DateTimeParseException e) {
-            throw new VideoModelException(VideoErrorCode.VIDEO_DURACION_INVALID);
+            throw new VideoException(VideoError.VIDEO_DURACION_INVALID, e);
         }
     }
     
-    public Video(String titulo, Usuario autor, LocalTime duracion, String descripcion, String formato) throws VideoModelException {
+    public Video(String titulo, Usuario autor, LocalTime duracion, String descripcion, String formato) throws VideoException {
         this(titulo, autor, descripcion, formato);
         if (duracion == null) {
-            throw new VideoModelException(VideoErrorCode.VIDEO_DURACION_REQUIRED);
+            throw new VideoException(VideoError.VIDEO_DURACION_REQUIRED);
         }
         this.duracion = duracion;
     }
     
     public Video(String titulo, Usuario autor, String fechaCreacion, String duracion, Integer reproducciones, String descripcion, String formato)
-            throws VideoModelException
+            throws VideoException
     {
         this(titulo, autor, duracion, descripcion, formato);
         if (fechaCreacion == null) {
-            throw new VideoModelException(VideoErrorCode.VIDEO_FECHA_CREACION_REQUIRED);
+            throw new VideoException(VideoError.VIDEO_FECHA_CREACION_REQUIRED);
         }
         try {
             this.fechaCreacion = LocalDateTime.parse(fechaCreacion);
         } catch (DateTimeParseException e) {
-            throw new VideoModelException(VideoErrorCode.VIDEO_FECHA_CREACION_INVALID);
-        }        
+            throw new VideoException(VideoError.VIDEO_FECHA_CREACION_INVALID, e);
+        }
         if (reproducciones < 0) {
-            throw new VideoModelException(VideoErrorCode.VIDEO_REPRODUCCIONES_INVALID);
+            throw new VideoException(VideoError.VIDEO_REPRODUCCIONES_INVALID);
         }
         this.reproducciones = reproducciones;
     }
     
     public Video(String titulo, Usuario autor, LocalDateTime fechaCreacion, LocalTime duracion, Integer reproducciones, String descripcion, String formato)
-            throws VideoModelException
+            throws VideoException
     {
         this(titulo, autor, duracion, descripcion, formato);
         if (fechaCreacion == null) {
-            throw new VideoModelException(VideoErrorCode.VIDEO_FECHA_CREACION_REQUIRED);
+            throw new VideoException(VideoError.VIDEO_FECHA_CREACION_REQUIRED);
         }
         this.fechaCreacion = fechaCreacion;
         if (reproducciones < 0) {
-            throw new VideoModelException(VideoErrorCode.VIDEO_REPRODUCCIONES_INVALID);
+            throw new VideoException(VideoError.VIDEO_REPRODUCCIONES_INVALID);
         }
         this.reproducciones = reproducciones;
     }
     
     public Video(Integer id, String titulo, Usuario autor, String fechaCreacion, String duracion, Integer reproducciones, String descripcion, String formato)
-            throws VideoModelException
+            throws VideoException
     {
         this(titulo, autor, fechaCreacion, duracion, reproducciones, descripcion, formato);
         setId(id);
     }
     
     public Video(Integer id, String titulo, Usuario autor, LocalDateTime fechaCreacion, LocalTime duracion, Integer reproducciones, String descripcion, String formato)
-            throws VideoModelException
+            throws VideoException
     {
         this(titulo, autor, fechaCreacion, duracion, reproducciones, descripcion, formato);
         setId(id);
@@ -172,18 +172,18 @@ public class Video {
     }
     
     // Setters
-    public final void setId(Integer id) throws VideoModelException {
+    public final void setId(Integer id) throws VideoException {
         if (id == null) {
-            throw new VideoModelException(VideoErrorCode.VIDEO_ID_REQUIRED);
+            throw new VideoException(VideoError.VIDEO_ID_REQUIRED);
         }
         if (id < 0) {
-            throw new VideoModelException(VideoErrorCode.VIDEO_ID_INVALID);
+            throw new VideoException(VideoError.VIDEO_ID_INVALID);
         }
         this.id = id;
     }
-    public final void setAutor(Usuario autor) throws VideoModelException {
+    public final void setAutor(Usuario autor) throws VideoException {
         if (autor == null) {
-            throw new VideoModelException(VideoErrorCode.VIDEO_AUTOR_REQUIRED);
+            throw new VideoException(VideoError.VIDEO_AUTOR_REQUIRED);
         }
         this.autor = autor;
     }

@@ -1,8 +1,8 @@
 package isdcm.api.exceptions;
 
-public class UsuarioModelException extends Exception {
+public class UsuarioException extends Exception {
     
-    public enum UsuarioErrorCode {
+    public enum UsuarioError {
         USUARIO_ID_REQUIRED,
         USUARIO_ID_INVALID,
         USUARIO_NOMBRE_REQUIRED,
@@ -15,7 +15,7 @@ public class UsuarioModelException extends Exception {
         USUARIO_PASSWORD_INVALID;
     }
     
-    public UsuarioModelException(UsuarioErrorCode errorCode) {
-        super( errorCode.toString());
+    public UsuarioException(UsuarioError error) {
+        super( error.toString());
     }
 }

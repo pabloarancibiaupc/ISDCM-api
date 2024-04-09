@@ -5,7 +5,7 @@ import isdcm.api.dto.UsuarioCreationDTO;
 import isdcm.api.dto.UsuarioDTO;
 import isdcm.api.exceptions.UsuarioConflictException;
 import isdcm.api.exceptions.SystemErrorException;
-import isdcm.api.exceptions.UsuarioModelException;
+import isdcm.api.exceptions.UsuarioException;
 import isdcm.api.exceptions.UsuarioNotFoundException;
 import isdcm.api.mappers.UsuarioMapper;
 import isdcm.api.models.Usuario;
@@ -38,16 +38,16 @@ public class UsuarioResource {
             Usuario usuarioRes = usuarioRepo.insert(usuarioReq);
             UsuarioDTO dtoRes = usuarioMapper.toDTO(usuarioRes);
             return Response.status(Response.Status.CREATED).entity(dtoRes).build();
-        } catch (UsuarioModelException e) {
+        } catch (UsuarioException e) {
+            System.out.println(e);
             String msg = e.getMessage();
-            System.out.println(msg);
             return Response.status(Status.BAD_REQUEST).entity(msg).build();
         } catch (UsuarioConflictException e) {
+            System.out.println(e);
             String msg = e.getMessage();
-            System.out.println(msg);
             return Response.status(Status.CONFLICT).entity(msg).build();
         } catch (SystemErrorException e) {
-            System.out.println(e.getMessage());
+            System.out.println(e);
             return Response.status(Status.INTERNAL_SERVER_ERROR).build();
         }
     }
@@ -62,10 +62,10 @@ public class UsuarioResource {
             UsuarioDTO dtoRes = usuarioMapper.toDTO(usuario);
             return Response.status(Response.Status.OK).entity(dtoRes).build();
         } catch (UsuarioNotFoundException e) {
-            System.out.println(e.getMessage());
+            System.out.println(e);
             return Response.status(Status.UNAUTHORIZED).build();
         } catch (SystemErrorException e) {
-            System.out.println(e.getMessage());
+            System.out.println(e);
             return Response.status(Status.INTERNAL_SERVER_ERROR).build();
         }
     }

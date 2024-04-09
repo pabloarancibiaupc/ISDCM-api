@@ -1,8 +1,8 @@
 package isdcm.api.exceptions;
 
-public class VideoModelException extends Exception {
+public class VideoException extends Exception {
     
-    public enum VideoErrorCode {
+    public enum VideoError {
         VIDEO_ID_REQUIRED,
         VIDEO_ID_INVALID,
         VIDEO_TITULO_REQUIRED,
@@ -16,7 +16,11 @@ public class VideoModelException extends Exception {
         VIDEO_FORMATO_REQUIRED;
     }
     
-    public VideoModelException(VideoErrorCode errorCode) {
-        super( errorCode.toString());
+    public VideoException(VideoError error) {
+        super( error.toString());
+    }
+    
+    public VideoException(VideoError error, Throwable cause) {
+        super( error.toString(), cause);
     }
 }

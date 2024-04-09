@@ -1,9 +1,11 @@
 package isdcm.api.repositories;
 
 import isdcm.api.exceptions.VideoConflictException;
+import isdcm.api.exceptions.VideoConflictException.VideoConflictError;
 import isdcm.api.exceptions.SystemErrorException;
-import isdcm.api.exceptions.UsuarioModelException;
-import isdcm.api.exceptions.VideoModelException;
+import isdcm.api.exceptions.UsuarioException;
+import isdcm.api.exceptions.VideoException;
+import isdcm.api.exceptions.VideoException.VideoError;
 import isdcm.api.exceptions.VideoNotFoundException;
 import isdcm.api.mappers.VideoMapper;
 import isdcm.api.models.Video;
@@ -60,14 +62,16 @@ public class VideoRepository {
                 video.setId(id);
             }
         } catch (SQLException e) {
-            System.out.println(e);
-            System.out.println(e.getSQLState());
-            if (e.getErrorCode() == 30000) {
-                throw new VideoConflictException(e);
+            int error = Integer.parseInt(e.getSQLState());
+            System.out.println("SQLState: " + error);
+            if (error == 23505) {
+                throw new VideoConflictException(VideoConflictError.EXISTING_VIDEO, e);
+            }
+            if (error == 23503) {
+                throw new VideoConflictException(VideoConflictError.AUTOR_NOT_EXISTS, e);
             }
             throw new SystemErrorException(e);
-        } catch (VideoModelException e) {
-            System.out.println(e.getMessage());
+        } catch (VideoException e) {
             throw new SystemErrorException(e);
         }
         return video;
@@ -81,8 +85,7 @@ public class VideoRepository {
             PreparedStatement ps = c.prepareStatement(q);
             ResultSet rs = ps.executeQuery();
             return videoMapper.toModels(rs);
-        } catch (SQLException | VideoModelException | UsuarioModelException e) {
-            System.out.println(e.getMessage());
+        } catch (SQLException | VideoException | UsuarioException e) {
             throw new SystemErrorException(e);
         }
     }
@@ -101,30 +104,33 @@ public class VideoRepository {
             ps.setString(2, param);
             ResultSet rs = ps.executeQuery();
             return videoMapper.toModels(rs);
-        } catch (SQLException | VideoModelException | UsuarioModelException e) {
-            System.out.println(e.getMessage());
+        } catch (SQLException | VideoException | UsuarioException e) {
             throw new SystemErrorException(e);
         }
     }
     
-    public ArrayList<Video> selectByAdvancedSearch(String titulo, String autor, String fechaCreacion) throws DateTimeParseException, SystemErrorException {
+    public ArrayList<Video> selectByAdvancedSearch(String titulo, String autor, String fechaCreacion) throws VideoException, SystemErrorException {
         LocalDate startDate, endDate;
         fechaCreacion = fechaCreacion.trim();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-        switch (fechaCreacion.length()) {
-            case 4:
-                fechaCreacion = "01/01/" + fechaCreacion;
-                startDate = LocalDate.parse(fechaCreacion, formatter);
-                endDate = startDate.withMonth(12).withDayOfMonth(31);
-                break;
-            case 7:
-                fechaCreacion = "01/" + fechaCreacion;
-                startDate = LocalDate.parse(fechaCreacion, formatter);
-                endDate = startDate.plusMonths(1).minusDays(1);
-                break;
-            default:
-                startDate = endDate = LocalDate.parse(fechaCreacion, formatter);
-                break;
+        try {
+            switch (fechaCreacion.length()) {
+                case 4:
+                    fechaCreacion = "01/01/" + fechaCreacion;
+                    startDate = LocalDate.parse(fechaCreacion, formatter);
+                    endDate = startDate.withMonth(12).withDayOfMonth(31);
+                    break;
+                case 7:
+                    fechaCreacion = "01/" + fechaCreacion;
+                    startDate = LocalDate.parse(fechaCreacion, formatter);
+                    endDate = startDate.plusMonths(1).minusDays(1);
+                    break;
+                default:
+                    startDate = endDate = LocalDate.parse(fechaCreacion, formatter);
+                    break;
+            }
+        } catch (DateTimeParseException e) {
+            throw new VideoException(VideoError.VIDEO_FECHA_CREACION_INVALID, e);
         }
         LocalDateTime startDateTime = startDate.atTime(LocalTime.MIN);
         LocalDateTime endDateTime = endDate.atTime(LocalTime.MAX);
@@ -150,8 +156,7 @@ public class VideoRepository {
             ps.setTimestamp(4, endTimestamp);
             ResultSet rs = ps.executeQuery();
             return videoMapper.toModels(rs);
-        } catch (SQLException | VideoModelException | UsuarioModelException e) {
-            System.out.println(e.getMessage());
+        } catch (SQLException | VideoException | UsuarioException e) {
             throw new SystemErrorException(e);
         }
     }
@@ -169,8 +174,7 @@ public class VideoRepository {
             } else {
                 throw new VideoNotFoundException();
             }
-        }  catch (SQLException | VideoModelException | UsuarioModelException e) {
-            System.out.println(e.getMessage());
+        }  catch (SQLException | VideoException | UsuarioException e) {
             throw new SystemErrorException(e);
         }
     }
@@ -199,9 +203,13 @@ public class VideoRepository {
                 throw new VideoNotFoundException();
             }
         } catch (SQLException e) {
-            System.out.println(e.getMessage());
-            if (e.getErrorCode() == 30000) {
-                throw new VideoConflictException(e);
+            int error = Integer.parseInt(e.getSQLState());
+            System.out.println("SQLState: " + error);
+            if (error == 23505) {
+                throw new VideoConflictException(VideoConflictError.EXISTING_VIDEO, e);
+            }
+            if (error == 23503) {
+                throw new VideoConflictException(VideoConflictError.AUTOR_NOT_EXISTS, e);
             }
             throw new SystemErrorException(e);
         }
