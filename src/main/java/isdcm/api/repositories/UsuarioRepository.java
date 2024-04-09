@@ -61,7 +61,7 @@ public class UsuarioRepository {
     
     public Usuario selectByUsername(String username) throws UsuarioNotFoundException, SystemErrorException {
         try (Connection c = DriverManager.getConnection(url)) {
-            String q = "SELECT id, nombre, apellido, email, username " +
+            String q = "SELECT id AS usuario_id, nombre, apellido, email, username " +
                        "FROM usuarios " +
                        "WHERE username = ?";
             PreparedStatement ps = c.prepareStatement(q);
@@ -80,7 +80,7 @@ public class UsuarioRepository {
     
     public Usuario selectByUsernameAndPassword(String username, String password) throws UsuarioNotFoundException, SystemErrorException {
         try (Connection c = DriverManager.getConnection(url)) {
-            String q = "SELECT id, nombre, apellido, email, username " +
+            String q = "SELECT id AS usuario_id, nombre, apellido, email, username " +
                        "FROM usuarios " +
                        "WHERE username = ? AND password = ?";
             PreparedStatement ps = c.prepareStatement(q);
