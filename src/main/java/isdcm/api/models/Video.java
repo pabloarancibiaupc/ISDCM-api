@@ -136,10 +136,10 @@ public class Video {
     private static double CalculateSimilarityByAdvancedSearch(Video video, String titulo, String autor) {
         JaroWinklerSimilarity sim = new JaroWinklerSimilarity();
         String text = "";
-        if (!titulo.isBlank()) {
+        if (titulo != null && !titulo.isBlank()) {
             text += video.getTitulo().toLowerCase();
         }
-        if (!autor.isBlank()) {
+        if (autor != null && !autor.isBlank()) {
             text += video.getAutor().getUsername().toLowerCase();
         }
         return sim.apply(text, titulo+autor);

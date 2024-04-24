@@ -110,30 +110,34 @@ public class VideoRepository {
     }
     
     public ArrayList<Video> selectByAdvancedSearch(String titulo, String autor, String fechaCreacion) throws VideoException, SystemErrorException {
-        LocalDate startDate, endDate;
-        fechaCreacion = fechaCreacion.trim();
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-        try {
-            switch (fechaCreacion.length()) {
-                case 4:
-                    fechaCreacion = "01/01/" + fechaCreacion;
-                    startDate = LocalDate.parse(fechaCreacion, formatter);
-                    endDate = startDate.withMonth(12).withDayOfMonth(31);
-                    break;
-                case 7:
-                    fechaCreacion = "01/" + fechaCreacion;
-                    startDate = LocalDate.parse(fechaCreacion, formatter);
-                    endDate = startDate.plusMonths(1).minusDays(1);
-                    break;
-                default:
-                    startDate = endDate = LocalDate.parse(fechaCreacion, formatter);
-                    break;
+        LocalDateTime startDateTime = LocalDateTime.of(2000, 1, 1, 0, 0);
+        LocalDateTime endDateTime = LocalDateTime.of(9999, 12, 31, 23, 59);
+        if (fechaCreacion != null) {
+            fechaCreacion = fechaCreacion.trim();
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+            LocalDate startDate, endDate;
+            try {
+                switch (fechaCreacion.length()) {
+                    case 4:
+                        fechaCreacion = "01/01/" + fechaCreacion;
+                        startDate = LocalDate.parse(fechaCreacion, formatter);
+                        endDate = startDate.withMonth(12).withDayOfMonth(31);
+                        break;
+                    case 7:
+                        fechaCreacion = "01/" + fechaCreacion;
+                        startDate = LocalDate.parse(fechaCreacion, formatter);
+                        endDate = startDate.plusMonths(1).minusDays(1);
+                        break;
+                    default:
+                        startDate = endDate = LocalDate.parse(fechaCreacion, formatter);
+                        break;
+                }
+            } catch (DateTimeParseException e) {
+                throw new VideoException(VideoError.VIDEO_FECHA_CREACION_INVALID, e);
             }
-        } catch (DateTimeParseException e) {
-            throw new VideoException(VideoError.VIDEO_FECHA_CREACION_INVALID, e);
+            startDateTime = startDate.atTime(LocalTime.MIN);
+            endDateTime = endDate.atTime(LocalTime.MAX);
         }
-        LocalDateTime startDateTime = startDate.atTime(LocalTime.MIN);
-        LocalDateTime endDateTime = endDate.atTime(LocalTime.MAX);
         return selectByAdvancedSearch(titulo, autor, startDateTime, endDateTime);
     }
     
