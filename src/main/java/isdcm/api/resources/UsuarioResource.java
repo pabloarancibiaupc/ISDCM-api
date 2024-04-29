@@ -61,12 +61,11 @@ public class UsuarioResource {
     
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response post(UsuarioCreationDTO dtoReq) {
+    public Response post(UsuarioCreationDTO dto) {
         try {
-            Usuario usuarioReq = usuarioMapper.toModel(dtoReq);
-            Usuario usuarioRes = usuarioRepo.insert(usuarioReq);
-            UsuarioDTO dtoRes = usuarioMapper.toDTO(usuarioRes);
-            return Response.status(Response.Status.CREATED).entity(dtoRes).build();
+            Usuario usuario = usuarioMapper.toModel(dto);
+            usuarioRepo.insert(usuario);
+            return Response.status(Response.Status.CREATED).build();
         } catch (UsuarioException e) {
             System.out.println(e);
             String msg = e.getMessage();

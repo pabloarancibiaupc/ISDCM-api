@@ -31,22 +31,17 @@ public class UsuarioRepository {
         usuarioMapper = UsuarioMapper.GetInstance();
     }
     
-    public Usuario insert(Usuario usuario) throws UsuarioConflictException, SystemErrorException {
+    public void insert(Usuario usuario) throws UsuarioConflictException, SystemErrorException {
         try (Connection c = DriverManager.getConnection(url)) {
             String q = "INSERT INTO usuarios(nombre, apellido, email, username, password) " +
                        "VALUES (?, ?, ?, ?, ?)";
-            PreparedStatement ps = c.prepareStatement(q, PreparedStatement.RETURN_GENERATED_KEYS);
+            PreparedStatement ps = c.prepareStatement(q);
             ps.setString(1, usuario.getNombre());
             ps.setString(2, usuario.getApellido());
             ps.setString(3, usuario.getEmail());
             ps.setString(4, usuario.getUsername());
             ps.setString(5, usuario.getPassword());
             ps.executeUpdate();
-            ResultSet rs = ps.getGeneratedKeys();
-            if (rs.next()) {
-                int id = rs.getInt(1);
-                usuario.setId(id);
-            }
         } catch (SQLException e) {
             int error = Integer.parseInt(e.getSQLState());
             System.out.println("SQLState: " + error);
@@ -54,10 +49,7 @@ public class UsuarioRepository {
                 throw new UsuarioConflictException(UsuarioConflictError.EXISTING_USUARIO, e);
             }
             throw new SystemErrorException(e);
-        }  catch (UsuarioException e) {
-            throw new SystemErrorException(e);
         }
-        return usuario;
     }
     
     public Usuario selectByUsername(String username) throws UsuarioNotFoundException, SystemErrorException {
