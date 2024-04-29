@@ -78,21 +78,16 @@ public class UsuarioRepository {
         }
     }
     
-    public Usuario selectByUsernameAndPassword(String username, String password) throws UsuarioNotFoundException, SystemErrorException {
+    public boolean checkByUsernameAndPassword(String username, String password) throws SystemErrorException {
         try (Connection c = DriverManager.getConnection(url)) {
-            String q = "SELECT id AS usuario_id, nombre, apellido, email, username " +
-                       "FROM usuarios " +
+            String q = "SELECT * FROM usuarios " +
                        "WHERE username = ? AND password = ?";
             PreparedStatement ps = c.prepareStatement(q);
             ps.setString(1, username);
             ps.setString(2, password);
             ResultSet rs = ps.executeQuery();
-            if (rs.next()) {
-                return usuarioMapper.toModel(rs);
-            } else {
-                throw new UsuarioNotFoundException();
-            }
-        } catch (SQLException | UsuarioException e) {
+            return rs.next();
+        } catch (SQLException e) {
             throw new SystemErrorException(e);
         }
     }
