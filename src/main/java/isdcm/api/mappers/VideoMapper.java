@@ -3,7 +3,6 @@ package isdcm.api.mappers;
 import isdcm.api.dto.UsuarioDTO;
 import isdcm.api.dto.VideoCreationDTO;
 import isdcm.api.dto.VideoDTO;
-import isdcm.api.dto.VideoUpdateDTO;
 import isdcm.api.exceptions.UsuarioException;
 import isdcm.api.exceptions.VideoException;
 import isdcm.api.models.Usuario;
@@ -54,6 +53,7 @@ public class VideoMapper {
         dto.setReproducciones(video.getReproducciones());
         dto.setDescripcion(video.getDescripcion());
         dto.setFormato(video.getFormato());
+        dto.setEncriptado(video.getEncriptado());
         return dto;
     }
     
@@ -75,17 +75,6 @@ public class VideoMapper {
         return new Video(titulo, autor, duracion, descripcion, formato);
     }
     
-    public Video toModel(VideoUpdateDTO dto) throws UsuarioException, VideoException {
-        String titulo = dto.getTitulo();
-        Usuario autor = new Usuario(dto.getAutor());
-        String fechaCreacion = dto.getFechaCreacion();
-        String duracion = dto.getDuracion();
-        int reproducciones = dto.getReproducciones();
-        String descripcion = dto.getDescripcion();
-        String formato = dto.getFormato();
-        return new Video(titulo, autor, fechaCreacion, duracion, reproducciones, descripcion, formato);
-    }
-    
     public Video toModel(VideoDTO dto) throws UsuarioException, VideoException {
         Integer id = dto.getId();
         String titulo = dto.getTitulo();
@@ -95,7 +84,8 @@ public class VideoMapper {
         int reproducciones = dto.getReproducciones();
         String descripcion = dto.getDescripcion();
         String formato = dto.getFormato();
-        return new Video(id, titulo, autor, fechaCreacion, duracion, reproducciones, descripcion, formato);
+        boolean encriptado = dto.getEncriptado();
+        return new Video(id, titulo, autor, fechaCreacion, duracion, reproducciones, descripcion, formato, encriptado);
     }
     
     public Video toModel(ResultSet rs) throws SQLException, UsuarioException, VideoException {
@@ -106,7 +96,8 @@ public class VideoMapper {
         int reproducciones = rs.getInt("reproducciones");
         String descripcion = rs.getString("descripcion");
         String formato = rs.getString("formato");
+        boolean encriptado = rs.getBoolean("encrypted");
         Usuario autor = usuarioMapper.toModel(rs);
-        return new Video(videoId, titulo, autor, fechaCreacion, duracion, reproducciones, descripcion, formato);
+        return new Video(videoId, titulo, autor, fechaCreacion, duracion, reproducciones, descripcion, formato, encriptado);
     }
 }

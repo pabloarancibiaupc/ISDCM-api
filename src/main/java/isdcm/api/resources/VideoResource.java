@@ -2,12 +2,12 @@ package isdcm.api.resources;
 
 import isdcm.api.dto.VideoCreationDTO;
 import isdcm.api.dto.VideoDTO;
-import isdcm.api.dto.VideoUpdateDTO;
 import isdcm.api.exceptions.VideoConflictException;
 import isdcm.api.exceptions.SystemErrorException;
 import isdcm.api.exceptions.UsuarioException;
 import isdcm.api.exceptions.UsuarioNotFoundException;
 import isdcm.api.exceptions.VideoException;
+import isdcm.api.exceptions.VideoException.VideoError;
 import isdcm.api.exceptions.VideoNotFoundException;
 import isdcm.api.mappers.VideoMapper;
 import isdcm.api.models.Usuario;
@@ -117,11 +117,14 @@ public class VideoResource {
     
     @PUT
     @Path("{id: [0-9]+}")
-    public Response putById(@PathParam("id") String idParam, VideoUpdateDTO dto) {
+    public Response putById(@PathParam("id") String idParam, VideoDTO dto) {
         int id = Integer.parseInt(idParam);
         try {
             Video video = videoMapper.toModel(dto);
-            video.setId(id);
+            if (video.getId() != id) {
+                String msg = VideoError.VIDEO_ID_INVALID.name();
+                return Response.status(Status.BAD_REQUEST).entity(msg).build();
+            }
             videoRepo.update(video);
             return Response.status(Status.NO_CONTENT).build();
         } catch (VideoException | UsuarioException e) {

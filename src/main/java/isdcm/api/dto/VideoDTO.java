@@ -9,6 +9,7 @@ public class VideoDTO {
     private Integer reproducciones;
     private String descripcion;
     private String formato;
+    private boolean encriptado;
     
     // Getters
     public Integer getId() {
@@ -35,6 +36,9 @@ public class VideoDTO {
     public String getFormato() {
         return formato;
     }
+    public boolean getEncriptado() {
+        return encriptado;
+    }
     
     // Setters
     public void setId(Integer id) {
@@ -60,5 +64,8 @@ public class VideoDTO {
     }
     public void setFormato(String formato) {
         this.formato = formato;
+    }
+    public void setEncriptado(boolean encriptado) {
+        this.encriptado = encriptado;
     }
 }

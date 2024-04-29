@@ -18,6 +18,7 @@ public class Video {
     private Integer reproducciones;
     private String descripcion;
     private String formato;
+    private boolean encriptado;
     
     private Video(String titulo, Usuario autor, String descripcion, String formato) throws VideoException {
         this.id = null;
@@ -37,6 +38,7 @@ public class Video {
             throw new VideoException(VideoError.VIDEO_FORMATO_REQUIRED);
         }
         this.formato = formato.trim();
+        this.encriptado = false;
     }
     
     public Video(String titulo, Usuario autor, String duracion, String descripcion, String formato) throws VideoException {
@@ -59,10 +61,11 @@ public class Video {
         this.duracion = duracion;
     }
     
-    public Video(String titulo, Usuario autor, String fechaCreacion, String duracion, Integer reproducciones, String descripcion, String formato)
+    public Video(Integer id, String titulo, Usuario autor, String fechaCreacion, String duracion, Integer reproducciones, String descripcion, String formato, boolean encriptado)
             throws VideoException
     {
         this(titulo, autor, duracion, descripcion, formato);
+        setId(id);
         if (fechaCreacion == null) {
             throw new VideoException(VideoError.VIDEO_FECHA_CREACION_REQUIRED);
         }
@@ -75,12 +78,14 @@ public class Video {
             throw new VideoException(VideoError.VIDEO_REPRODUCCIONES_INVALID);
         }
         this.reproducciones = reproducciones;
+        this.encriptado = encriptado;
     }
     
-    public Video(String titulo, Usuario autor, LocalDateTime fechaCreacion, LocalTime duracion, Integer reproducciones, String descripcion, String formato)
+    public Video(Integer id, String titulo, Usuario autor, LocalDateTime fechaCreacion, LocalTime duracion, Integer reproducciones, String descripcion, String formato, boolean encriptado)
             throws VideoException
     {
         this(titulo, autor, duracion, descripcion, formato);
+        setId(id);
         if (fechaCreacion == null) {
             throw new VideoException(VideoError.VIDEO_FECHA_CREACION_REQUIRED);
         }
@@ -89,20 +94,7 @@ public class Video {
             throw new VideoException(VideoError.VIDEO_REPRODUCCIONES_INVALID);
         }
         this.reproducciones = reproducciones;
-    }
-    
-    public Video(Integer id, String titulo, Usuario autor, String fechaCreacion, String duracion, Integer reproducciones, String descripcion, String formato)
-            throws VideoException
-    {
-        this(titulo, autor, fechaCreacion, duracion, reproducciones, descripcion, formato);
-        setId(id);
-    }
-    
-    public Video(Integer id, String titulo, Usuario autor, LocalDateTime fechaCreacion, LocalTime duracion, Integer reproducciones, String descripcion, String formato)
-            throws VideoException
-    {
-        this(titulo, autor, fechaCreacion, duracion, reproducciones, descripcion, formato);
-        setId(id);
+        this.encriptado = encriptado;
     }
     
     public static ArrayList<Video> SortByQuery(ArrayList<Video> videos, String query) {
@@ -169,6 +161,9 @@ public class Video {
     }
     public String getFormato() {
         return formato;
+    }
+    public boolean getEncriptado() {
+        return encriptado;
     }
     
     // Setters

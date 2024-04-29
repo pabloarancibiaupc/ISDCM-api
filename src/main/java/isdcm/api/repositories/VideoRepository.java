@@ -46,8 +46,8 @@ public class VideoRepository {
         Timestamp fechaCreacion = Timestamp.valueOf(video.getFechaCreacion());
         Time duracion = Time.valueOf(video.getDuracion());
         try (Connection c = DriverManager.getConnection(url)) {
-            String q = "INSERT INTO videos(titulo, autor, fecha_creacion, duracion, descripcion, formato)" +
-                       "VALUES (?, ?, ?, ?, ?, ?)";
+            String q = "INSERT INTO videos(titulo, autor, fecha_creacion, duracion, descripcion, formato, encrypted)" +
+                       "VALUES (?, ?, ?, ?, ?, ?, ?)";
             PreparedStatement ps = c.prepareStatement(q, PreparedStatement.RETURN_GENERATED_KEYS);
             ps.setString(1, video.getTitulo());
             ps.setString(2, autor);
@@ -55,6 +55,7 @@ public class VideoRepository {
             ps.setTime(4, duracion);
             ps.setString(5, video.getDescripcion());
             ps.setString(6, video.getFormato());
+            ps.setBoolean(7, video.getEncriptado());
             ps.executeUpdate();
             ResultSet rs = ps.getGeneratedKeys();
             if (rs.next()) {
@@ -191,7 +192,7 @@ public class VideoRepository {
             String q = "UPDATE videos " +
                        "SET titulo = ?, autor = ?, fecha_creacion = ?, " +
                        "    duracion = ?, reproducciones = ?, descripcion = ?, " +
-                       "    formato = ? " +
+                       "    formato = ?, encrypted = ? " +
                        "WHERE id = ?";
             PreparedStatement ps = c.prepareStatement(q);
             ps.setString(1, video.getTitulo());
@@ -201,7 +202,8 @@ public class VideoRepository {
             ps.setInt(5, video.getReproducciones());
             ps.setString(6, video.getDescripcion());
             ps.setString(7, video.getFormato());
-            ps.setInt(8, video.getId());
+            ps.setBoolean(8, video.getEncriptado());
+            ps.setInt(9, video.getId());
             int rowsUpdated = ps.executeUpdate();
             if (rowsUpdated == 0) {
                 throw new VideoNotFoundException();
